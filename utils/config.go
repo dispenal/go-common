@@ -15,6 +15,7 @@ type BaseConfig struct {
 	ServiceHttpPort       string `mapstructure:"SERVICE_HTTP_PORT"`
 	ServiceGrpcPort       string `mapstructure:"SERVICE_GRPC_PORT"`
 	GcpProjectId          string `mapstructure:"GCP_PROJECT_ID"`
+	PubsubDlq             string `mapstructure:"PUBSUB_DLQ_TOPIC"`
 	RedisHost             string `mapstructure:"REDIS_HOST"`
 	RedisPort             string `mapstructure:"REDIS_PORT"`
 	RedisPassword         string `mapstructure:"REDIS_PASSWORD"`
