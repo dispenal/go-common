@@ -18,7 +18,9 @@ type BaseConfig struct {
 	PubsubDlq             string `mapstructure:"PUBSUB_DLQ_TOPIC"`
 	RedisHost             string `mapstructure:"REDIS_HOST"`
 	RedisPort             string `mapstructure:"REDIS_PORT"`
+	RedisUser             string `mapstructure:"REDIS_USER"`
 	RedisPassword         string `mapstructure:"REDIS_PASSWORD"`
+	RedisCacheExpire      int `mapstructure:"REDIS_DEFAULT_CACHE_EXPIRE"`
 	MongoHost             string `mapstructure:"MONGO_HOST"`
 	MongoPort             string `mapstructure:"MONGO_PORT"`
 	MongoUser             string `mapstructure:"MONGO_USER"`
