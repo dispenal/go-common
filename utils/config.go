@@ -55,6 +55,10 @@ func LoadBaseConfig(path string, configName string) (*BaseConfig, error) {
 		viper.SetConfigName(".env")
 	}
 
+	if path == "" {
+		path = "."
+	}
+
 	conf := &BaseConfig{}
 
 	viper.SetConfigType("env")
