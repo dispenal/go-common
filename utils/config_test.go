@@ -9,7 +9,21 @@ import (
 
 func TestLoadBaseConfig(t *testing.T) {
 	assert.NotPanics(t, func() {
+		config, err := LoadBaseConfig("../", "")
+
+		assert.NotNil(t, config)
+		assert.Nil(t, err)
+	})
+
+	assert.NotPanics(t, func() {
 		config, err := LoadBaseConfig("../", "test")
+
+		assert.NotNil(t, config)
+		assert.Nil(t, err)
+	})
+
+	assert.NotPanics(t, func() {
+		config, err := LoadBaseConfig("../", "local")
 
 		assert.NotNil(t, config)
 		assert.Nil(t, err)

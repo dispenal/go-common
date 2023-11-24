@@ -49,19 +49,15 @@ type BaseConfig struct {
 }
 
 func LoadBaseConfig(path string, configName string) (*BaseConfig, error) {
-	if path == "" {
-		getwd, err := os.Getwd()
-		if err != nil {
-			return nil, errors.Wrap(err, "os.Getwd")
-		}
-
-		path = fmt.Sprintf("%s/.env", getwd)
+	if configName != "" {
+		viper.SetConfigName(configName)
+	} else {
+		viper.SetConfigName(".env")
 	}
 
 	conf := &BaseConfig{}
 
 	viper.SetConfigType("env")
-	viper.SetConfigName(configName)
 	viper.AddConfigPath(path)
 	if err := viper.ReadInConfig(); err != nil {
 		return nil, errors.Wrap(err, "viper.ReadInConfig")
