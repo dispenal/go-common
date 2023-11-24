@@ -57,9 +57,6 @@ func LoadBaseConfig(path string, configName string) (*BaseConfig, error) {
 
 		path = fmt.Sprintf("%s/.env", getwd)
 	}
-	if configName == "" {
-		configName = "BaseConfig"
-	}
 
 	conf := &BaseConfig{}
 
