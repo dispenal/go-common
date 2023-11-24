@@ -20,7 +20,7 @@ type BaseConfig struct {
 	RedisPort             string `mapstructure:"REDIS_PORT"`
 	RedisUser             string `mapstructure:"REDIS_USER"`
 	RedisPassword         string `mapstructure:"REDIS_PASSWORD"`
-	RedisCacheExpire      int `mapstructure:"REDIS_DEFAULT_CACHE_EXPIRE"`
+	RedisCacheExpire      int    `mapstructure:"REDIS_DEFAULT_CACHE_EXPIRE"`
 	MongoHost             string `mapstructure:"MONGO_HOST"`
 	MongoPort             string `mapstructure:"MONGO_PORT"`
 	MongoUser             string `mapstructure:"MONGO_USER"`
@@ -91,7 +91,7 @@ func CheckAndSetConfig(path string, configName string) *BaseConfig {
 		}
 	}
 
-	if config.ServiceEnv == LOCAL {
+	if config.ServiceEnv == DEVELOPMENT {
 		os.Setenv("SERVICE_ENV", fmt.Sprintf("%s-local", config.ServiceEnv))
 	}
 

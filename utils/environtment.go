@@ -2,7 +2,7 @@ package common_utils
 
 const (
 	TEST        = "test"
-	LOCAL       = "local"
 	DEVELOPMENT = "development"
+	STAGING     = "staging"
 	PRODUCTION  = "production"
 )
