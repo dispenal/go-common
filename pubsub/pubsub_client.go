@@ -69,7 +69,7 @@ func (p *PubSubClientImpl) CreateSubscriptionIfNotExists(ctx context.Context, id
 		EnableMessageOrdering: true,
 		AckDeadline:           30 * time.Second,
 		DeadLetterPolicy: &pubsub.DeadLetterPolicy{
-			DeadLetterTopic:     p.config.PubsubDlq,
+			DeadLetterTopic:     fmt.Sprintf("projects/%s/topics/%s", p.config.GcpProjectId, p.config.PubsubDlq),
 			MaxDeliveryAttempts: 5,
 		},
 	})
