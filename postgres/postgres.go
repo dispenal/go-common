@@ -6,7 +6,10 @@ import (
 	"time"
 
 	common_utils "github.com/dispenal/go-common/utils"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+
+	pgxUUID "github.com/vgarvardt/pgx-google-uuid/v5"
 )
 
 const (
@@ -33,6 +36,10 @@ func NewPgxConn(cfg *common_utils.BaseConfig) (*pgxpool.Pool, error) {
 	poolCfg, err := pgxpool.ParseConfig(dataSourceName)
 	if err != nil {
 		return nil, err
+	}
+	poolCfg.AfterConnect = func(ctx context.Context, conn *pgx.Conn) error {
+		pgxUUID.Register(conn.TypeMap())
+		return nil
 	}
 
 	poolCfg.MaxConns = maxConn

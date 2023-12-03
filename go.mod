@@ -97,6 +97,7 @@ require (
 	github.com/stretchr/testify v1.8.4
 	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/uber/jaeger-client-go v2.30.0+incompatible
+	github.com/vgarvardt/pgx-google-uuid/v5 v5.0.0
 	go.mongodb.org/mongo-driver v1.13.0
 	go.uber.org/multierr v1.10.0 // indirect
 	go.uber.org/zap v1.26.0
