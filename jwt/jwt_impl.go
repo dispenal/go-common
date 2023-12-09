@@ -14,7 +14,7 @@ type JWTMaker struct {
 	jwt          *jwt.Token
 }
 
-func NewJWTMaker(config *common_utils.BaseConfig) (*JWTMaker, error) {
+func NewJWTMaker(config *common_utils.BaseConfig) (JWT, error) {
 	symmetricKey := config.JwtSecretKey
 
 	if len(symmetricKey) != chacha20poly1305.KeySize {
