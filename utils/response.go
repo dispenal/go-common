@@ -5,11 +5,12 @@ import (
 	"net/http"
 )
 
-type Response struct {
-	StatusCode int         `json:"status_code"`
-	Status     string      `json:"status"`
-	Message    string      `json:"message"`
-	Data       interface{} `json:"data,omitempty"`
+// swagger:model Response
+type Response[T any] struct {
+	StatusCode int    `json:"status_code"`
+	Status     string `json:"status"`
+	Message    string `json:"message"`
+	Data       T      `json:"data,omitempty"`
 }
 
 // FOR TESTING PURPOSE
@@ -32,7 +33,7 @@ func GenerateJsonResponse(w http.ResponseWriter, data interface{}, statusCode in
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
 
-	response := Response{
+	response := Response[interface{}]{
 		Message:    message,
 		StatusCode: statusCode,
 		Status:     http.StatusText(statusCode),

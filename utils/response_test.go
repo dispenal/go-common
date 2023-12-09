@@ -20,7 +20,7 @@ func TestGenerateSuccessResp(t *testing.T) {
 
 	GenerateJsonResponse(recorder, data, successStatusCode, "Test Success")
 
-	var resp Response
+	var resp Response[string]
 	json.NewDecoder(recorder.Body).Decode(&resp)
 
 	assert.Equal(t, "Test Success", resp.Message)
@@ -36,7 +36,7 @@ func TestGenerateErrorResp(t *testing.T) {
 
 	GenerateJsonResponse(recorder, data, errorStatusCode, "Test Failed")
 
-	var resp Response
+	var resp Response[string]
 	json.NewDecoder(recorder.Body).Decode(&resp)
 
 	assert.Equal(t, "Test Failed", resp.Message)
