@@ -9,12 +9,12 @@ import (
 	"golang.org/x/crypto/chacha20poly1305"
 )
 
-type JwtMaker struct {
+type JWTMaker struct {
 	symmetricKey []byte
 	jwt          *jwt.Token
 }
 
-func NewJWTMaker(config *common_utils.BaseConfig) (*JwtMaker, error) {
+func NewJWTMaker(config *common_utils.BaseConfig) (*JWTMaker, error) {
 	symmetricKey := config.JwtSecretKey
 
 	if len(symmetricKey) != chacha20poly1305.KeySize {
@@ -25,13 +25,13 @@ func NewJWTMaker(config *common_utils.BaseConfig) (*JwtMaker, error) {
 
 	jwt := jwt.New(jwt.SigningMethodHS256)
 
-	return &JwtMaker{
+	return &JWTMaker{
 		symmetricKey: symmetricKeyByte,
 		jwt:          jwt,
 	}, nil
 }
 
-func (m *JwtMaker) CreateToken(params PayloadParams, duration time.Duration) (string, *Payload, error) {
+func (m *JWTMaker) CreateToken(params PayloadParams, duration time.Duration) (string, *Payload, error) {
 	payload := NewPayload(params, duration)
 
 	m.jwt.Claims = payload
@@ -42,7 +42,7 @@ func (m *JwtMaker) CreateToken(params PayloadParams, duration time.Duration) (st
 
 }
 
-func (m *JwtMaker) VerifyToken(token string) (*Payload, error) {
+func (m *JWTMaker) VerifyToken(token string) (*Payload, error) {
 	payload := &Payload{}
 
 	_, err := jwt.ParseWithClaims(token, payload, func(token *jwt.Token) (interface{}, error) {
