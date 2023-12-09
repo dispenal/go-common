@@ -18,6 +18,6 @@ func TestComparePassword(t *testing.T) {
 	hashedPassword, err := HashedPassword(password)
 	require.NoError(t, err)
 	require.NotEmpty(t, hashedPassword)
-	err = ComparedPasswrd(hashedPassword, password)
+	err = ComparedPassword(hashedPassword, password)
 	require.NoError(t, err)
 }

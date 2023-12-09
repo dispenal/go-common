@@ -46,6 +46,7 @@ type BaseConfig struct {
 	S3PrivateBucket       string `mapstructure:"S3_PRIVATE_BUCKET"`
 	S3PublicUrl           string `mapstructure:"S3_PUBLIC_URL"`
 	S3PreSignedExpire     int    `mapstructure:"S3_PRESIGNED_EXPIRE"`
+	JwtSecretKey          string `mapstructure:"JWT_SECRET_KEY"`
 }
 
 func LoadBaseConfig(path string, configName string) (*BaseConfig, error) {
