@@ -14,7 +14,7 @@ var (
 )
 
 type Payload struct {
-	jwt.Claims
+	jwt.RegisteredClaims
 	ID        uuid.UUID `json:"id"`
 	UserId    uuid.UUID `json:"userId"`
 	Email     string    `json:"email"`
