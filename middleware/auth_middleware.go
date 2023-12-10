@@ -33,15 +33,15 @@ func (m *AuthMiddlewareImpl) CheckIsAuthenticated(next http.Handler) http.Handle
 		token := strings.Split(header, " ")[1]
 		payload, err := m.jwt.VerifyToken(token)
 		if err != nil {
-			common_utils.PanicIfError(common_utils.CustomErrorWithTrace(err, "invalid token", 401))
+			common_utils.PanicIfError(common_utils.CustomError("invalid token", 401))
 		}
 
 		if payload.Status != "active" {
 			common_utils.PanicIfError(common_utils.CustomError("inactive user can't access this route", 403))
 		}
 
-		ctx := jwtMaker.AppendRequestCtx(r, jwtMaker.JWT_PAYLOAD, payload)
+		ctx := r.WithContext(jwtMaker.AppendRequestCtx(r, jwtMaker.JWT_PAYLOAD, payload))
 
-		next.ServeHTTP(w, r.WithContext(ctx))
+		next.ServeHTTP(w, ctx)
 	})
 }
