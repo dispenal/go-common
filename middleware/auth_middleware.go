@@ -33,7 +33,7 @@ func (m *AuthMiddlewareImpl) CheckIsAuthenticated(next http.Handler) http.Handle
 		token := strings.Split(header, " ")[1]
 		payload, err := m.jwt.VerifyToken(token)
 		if err != nil {
-			common_utils.PanicIfError(common_utils.CustomError("invalid token", 401))
+			common_utils.PanicIfError(common_utils.CustomErrorWithTrace(err, "invalid token", 401))
 		}
 
 		if payload.Status != "active" {

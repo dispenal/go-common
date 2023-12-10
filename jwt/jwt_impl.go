@@ -39,7 +39,6 @@ func (m *JWTMaker) CreateToken(params PayloadParams, duration time.Duration) (st
 	token, err := m.jwt.SignedString(m.symmetricKey)
 
 	return token, payload, err
-
 }
 
 func (m *JWTMaker) VerifyToken(token string) (*Payload, error) {

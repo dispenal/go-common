@@ -20,15 +20,17 @@ type Payload struct {
 	Email     string    `json:"email"`
 	Role      string    `json:"role"`
 	Status    string    `json:"status"`
+	TokenType string    `json:"tokenType"`
 	IssuedAt  time.Time `json:"issuedAt"`
 	ExpiredAt time.Time `json:"expiredAt"`
 }
 
 type PayloadParams struct {
-	UserId uuid.UUID `json:"id"`
-	Email  string    `json:"email"`
-	Role   string    `json:"role"`
-	Status string    `json:"status"`
+	UserId    uuid.UUID `json:"id"`
+	Email     string    `json:"email"`
+	Role      string    `json:"role"`
+	Status    string    `json:"status"`
+	TokenType string    `json:"tokenType"`
 }
 
 func NewPayload(params PayloadParams, duration time.Duration) *Payload {
