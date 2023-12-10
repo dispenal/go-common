@@ -26,29 +26,18 @@ func ValidatePagination[T any](r *http.Request) *Pagination[T] {
 		pageSize = 10
 	}
 	sortBy := r.URL.Query().Get("sortBy")
-	var sortWithDirection string
-	if sortBy != "" {
-		direction := r.URL.Query().Get("sortDesc")
-		isDesc, err := strconv.ParseBool(direction)
-		if err != nil {
-			isDesc = false
-		}
-		if isDesc {
-			sortWithDirection = sortBy + " desc"
-		} else {
-			sortWithDirection = sortBy + " asc"
-		}
-
+	if sortBy == "" {
+		sortBy = "createdAt"
 	}
 	return &Pagination[T]{
 		Page:  page,
 		Limit: pageSize,
-		Sort:  sortWithDirection,
+		Sort:  sortBy,
 	}
 }
 
 func Paginate[T any](pagination *Pagination[T], rows []T) *Pagination[T] {
-	totalRows := len(rows)
+	totalRows := pagination.TotalRows
 	limit := pagination.Limit
 	page := pagination.Page
 
