@@ -9,7 +9,7 @@ import (
 )
 
 type AuthMiddleware interface {
-	CheckIsAuthenticated(handler func(w http.ResponseWriter, r *http.Request)) http.HandlerFunc
+	CheckIsAuthenticated(handler http.Handler) http.Handler
 }
 
 type AuthMiddlewareImpl struct {
@@ -22,8 +22,8 @@ func NewAuthMiddleware(jwt jwtMaker.JWT) AuthMiddleware {
 	}
 }
 
-func (m *AuthMiddlewareImpl) CheckIsAuthenticated(handler func(w http.ResponseWriter, r *http.Request)) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func (m *AuthMiddlewareImpl) CheckIsAuthenticated(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		header := r.Header.Get("Authorization")
 
 		if header == "" || !strings.Contains(header, "Bearer ") {
@@ -41,6 +41,7 @@ func (m *AuthMiddlewareImpl) CheckIsAuthenticated(handler func(w http.ResponseWr
 		}
 
 		ctx := jwtMaker.AppendRequestCtx(r, jwtMaker.JWT_PAYLOAD, payload)
-		handler(w, r.WithContext(ctx))
-	}
+
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
 }
