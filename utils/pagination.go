@@ -13,7 +13,7 @@ type Pagination[T any] struct {
 	Sort       string `json:"sort,omitempty"`
 	TotalRows  int    `json:"totalRows,omitempty"`
 	TotalPages int    `json:"totalPages,omitempty"`
-	Rows       T      `json:"rows,omitempty"`
+	Rows       []T    `json:"rows,omitempty"`
 }
 
 func ValidatePagination(r *http.Request) *Pagination[any] {
@@ -47,7 +47,7 @@ func ValidatePagination(r *http.Request) *Pagination[any] {
 	}
 }
 
-func Paginate[T []any](pagination Pagination[T], rows T) *Pagination[T] {
+func Paginate[T any](pagination Pagination[T], rows []T) *Pagination[T] {
 	totalRows := len(rows)
 	limit := pagination.Limit
 	page := pagination.Page
