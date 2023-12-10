@@ -10,6 +10,7 @@ import (
 
 type AuthMiddleware interface {
 	CheckIsAuthenticated(handler http.Handler) http.Handler
+	CheckIsRefresh(handler http.Handler) http.Handler
 }
 
 type AuthMiddlewareImpl struct {
