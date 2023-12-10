@@ -5,6 +5,6 @@ import (
 )
 
 type JWT interface {
-	CreateToken(params PayloadParams, duration time.Duration) (string, *Payload, error)
+	CreateToken(tokenType string, params PayloadParams, duration time.Duration) (string, *Payload, error)
 	VerifyToken(token string) (*Payload, error)
 }

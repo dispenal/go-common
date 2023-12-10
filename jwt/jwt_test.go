@@ -30,7 +30,7 @@ func TestJwt(t *testing.T) {
 	}
 
 	t.Run("Create token", func(t *testing.T) {
-		token, _, err := jwt.CreateToken(payload, 60*time.Second)
+		token, _, err := jwt.CreateToken("access", payload, 60*time.Second)
 
 		if err != nil {
 			t.Error(err)
@@ -40,7 +40,7 @@ func TestJwt(t *testing.T) {
 	})
 
 	t.Run("Verify token", func(t *testing.T) {
-		token, _, err := jwt.CreateToken(payload, 60*time.Second)
+		token, _, err := jwt.CreateToken("access", payload, 60*time.Second)
 
 		if err != nil {
 			t.Error(err)

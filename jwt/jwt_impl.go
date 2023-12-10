@@ -31,8 +31,14 @@ func NewJWTMaker(config *common_utils.BaseConfig) (JWT, error) {
 	}, nil
 }
 
-func (m *JWTMaker) CreateToken(params PayloadParams, duration time.Duration) (string, *Payload, error) {
+func (m *JWTMaker) CreateToken(tokenType string, params PayloadParams, duration time.Duration) (string, *Payload, error) {
 	payload := NewPayload(params, duration)
+
+	if tokenType != "access" && tokenType != "refresh" {
+		return "", nil, fmt.Errorf("invalid token type: must be either access or refresh")
+	}
+
+	payload.TokenType = tokenType
 
 	m.jwt.Claims = payload
 
