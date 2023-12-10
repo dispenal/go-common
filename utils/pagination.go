@@ -22,7 +22,7 @@ func ValidatePagination[T any](r *http.Request) *Pagination[T] {
 	if err != nil {
 		page = 1
 	}
-	pageSizeStr := chi.URLParam(r, "page")
+	pageSizeStr := chi.URLParam(r, "pageSize")
 	pageSize, err := strconv.Atoi(pageSizeStr)
 	if err != nil {
 		pageSize = 10
@@ -31,12 +31,14 @@ func ValidatePagination[T any](r *http.Request) *Pagination[T] {
 	var sortWithDirection string
 	if sortBy != "" {
 		direction := chi.URLParam(r, "sortDesc")
-		if direction != "" {
-			if direction == "true" || direction == "1" {
-				sortWithDirection = sortBy + " desc"
-			} else if direction == "false" || direction == "0" {
-				sortWithDirection = sortBy + " asc"
-			}
+		isDesc, err := strconv.ParseBool(direction)
+		if err != nil {
+			isDesc = false
+		}
+		if isDesc {
+			sortWithDirection = sortBy + " desc"
+		} else {
+			sortWithDirection = sortBy + " asc"
 		}
 
 	}
