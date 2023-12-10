@@ -16,7 +16,7 @@ type Pagination[T any] struct {
 	Rows       []T    `json:"rows,omitempty"`
 }
 
-func ValidatePagination(r *http.Request) *Pagination[any] {
+func ValidatePagination[T any](r *http.Request) *Pagination[T] {
 	pageStr := chi.URLParam(r, "page")
 	page, err := strconv.Atoi(pageStr)
 	if err != nil {
@@ -40,14 +40,14 @@ func ValidatePagination(r *http.Request) *Pagination[any] {
 		}
 
 	}
-	return &Pagination[any]{
+	return &Pagination[T]{
 		Page:  page,
 		Limit: pageSize,
 		Sort:  sortWithDirection,
 	}
 }
 
-func Paginate[T any](pagination Pagination[T], rows []T) *Pagination[T] {
+func Paginate[T any](pagination *Pagination[T], rows []T) *Pagination[T] {
 	totalRows := len(rows)
 	limit := pagination.Limit
 	page := pagination.Page
