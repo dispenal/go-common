@@ -36,6 +36,10 @@ func (m *AuthMiddlewareImpl) CheckIsAuthenticated(next http.Handler) http.Handle
 			common_utils.PanicIfError(common_utils.CustomErrorWithTrace(err, "invalid token", 401))
 		}
 
+		if payload.TokenType == "" {
+			common_utils.PanicIfError(common_utils.CustomError("invalid token type", 401))
+		}
+
 		if payload.Status != "active" {
 			common_utils.PanicIfError(common_utils.CustomError("inactive user can't access this route", 403))
 		}
