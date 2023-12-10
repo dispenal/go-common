@@ -3,8 +3,6 @@ package common_utils
 import (
 	"net/http"
 	"strconv"
-
-	"github.com/go-chi/chi/v5"
 )
 
 type Pagination[T any] struct {
@@ -17,20 +15,20 @@ type Pagination[T any] struct {
 }
 
 func ValidatePagination[T any](r *http.Request) *Pagination[T] {
-	pageStr := chi.URLParam(r, "page")
+	pageStr := r.URL.Query().Get("page")
 	page, err := strconv.Atoi(pageStr)
 	if err != nil {
 		page = 1
 	}
-	pageSizeStr := chi.URLParam(r, "pageSize")
+	pageSizeStr := r.URL.Query().Get("pageSize")
 	pageSize, err := strconv.Atoi(pageSizeStr)
 	if err != nil {
 		pageSize = 10
 	}
-	sortBy := chi.URLParam(r, "sortBy")
+	sortBy := r.URL.Query().Get("sortBy")
 	var sortWithDirection string
 	if sortBy != "" {
-		direction := chi.URLParam(r, "sortDesc")
+		direction := r.URL.Query().Get("sortDesc")
 		isDesc, err := strconv.ParseBool(direction)
 		if err != nil {
 			isDesc = false
