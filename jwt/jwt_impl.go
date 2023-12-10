@@ -45,11 +45,17 @@ func (m *JWTMaker) CreateToken(params PayloadParams, duration time.Duration) (st
 func (m *JWTMaker) VerifyToken(token string) (*Payload, error) {
 	payload := &Payload{}
 
-	_, err := jwt.ParseWithClaims(token, payload, func(token *jwt.Token) (interface{}, error) {
+	jwtAuth, err := jwt.ParseWithClaims(token, payload, func(token *jwt.Token) (interface{}, error) {
 		return m.symmetricKey, nil
 	})
 
 	if err != nil {
+		return nil, ErrInvalidToken
+	}
+
+	claims, ok := jwtAuth.Claims.(*Payload)
+
+	if !ok && !jwtAuth.Valid {
 		return nil, ErrInvalidToken
 	}
 
@@ -58,6 +64,6 @@ func (m *JWTMaker) VerifyToken(token string) (*Payload, error) {
 		return nil, err
 	}
 
-	return payload, nil
+	return claims, nil
 
 }
