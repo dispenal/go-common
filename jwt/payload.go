@@ -26,11 +26,10 @@ type Payload struct {
 }
 
 type PayloadParams struct {
-	UserId    uuid.UUID `json:"id"`
-	Email     string    `json:"email"`
-	Role      string    `json:"role"`
-	Status    string    `json:"status"`
-	TokenType string    `json:"tokenType"`
+	UserId uuid.UUID `json:"id"`
+	Email  string    `json:"email"`
+	Role   string    `json:"role"`
+	Status string    `json:"status"`
 }
 
 func NewPayload(params PayloadParams, duration time.Duration) *Payload {
