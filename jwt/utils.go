@@ -23,7 +23,7 @@ func GetRequestCtx(r *http.Request, ctxKey key) *Payload {
 func CheckIsAuthorize(r *http.Request, accessId uuid.UUID) {
 	jwtPayload := GetRequestCtx(r, JWT_PAYLOAD)
 
-	if jwtPayload.UserId != accessId {
+	if jwtPayload.UserId != accessId && jwtPayload.Role != "admin" {
 		common_utils.PanicIfError(common_utils.CustomError("not authorize to perform this operation", 403))
 	}
 }
