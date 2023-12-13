@@ -25,10 +25,13 @@ func StartAndTrace(ctx context.Context, spanName string) (context.Context, trace
 
 func StartAndTraceWithData(ctx context.Context, spanName string, data ...any) (context.Context, trace.Span) {
 	bag := BuildBaggage(data...)
+	attributes := BuildAttribute(data...)
 	defaultCtx := baggage.ContextWithBaggage(ctx, bag)
 
 	tracer := otel.GetTracerProvider().Tracer("")
 	spanCtx, span := tracer.Start(defaultCtx, spanName)
+
+	span.SetAttributes(attributes...)
 
 	return spanCtx, span
 }
@@ -153,4 +156,25 @@ func BuildBaggage(args ...any) baggage.Baggage {
 	bag, _ := baggage.New(members...)
 
 	return bag
+}
+func BuildAttribute(args ...any) []attribute.KeyValue {
+	members := make([]attribute.KeyValue, 0)
+
+	for _, arg := range args {
+		v := reflect.ValueOf(arg)
+		for i := 0; i < v.NumField(); i++ {
+			isEmpty := v.Field(i).Interface() == ""
+			if isEmpty {
+				continue
+			}
+
+			if v.Field(i).Kind() == reflect.String {
+				member := attribute.String(v.Type().Field(i).Name, v.Field(i).Interface().(string))
+				members = append(members, member)
+			}
+
+		}
+	}
+
+	return members
 }
