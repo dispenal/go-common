@@ -182,7 +182,26 @@ func BuildAttribute(args ...any) []attribute.KeyValue {
 			v = v.Elem()
 		}
 
-		if v.Kind() == reflect.Struct || v.Kind() == reflect.Map {
+		if v.Kind() == reflect.Slice {
+			dataBytes, err := json.Marshal(arg)
+			if err != nil {
+				continue
+			}
+
+			member := attribute.String("data", string(dataBytes))
+			members = append(members, member)
+		}
+
+		if v.Kind() == reflect.Map {
+			for _, key := range v.MapKeys() {
+				val := fmt.Sprintf("%v", v.MapIndex(key).Interface())
+
+				member := attribute.String(fmt.Sprintf("data.%s", key), val)
+				members = append(members, member)
+			}
+		}
+
+		if v.Kind() == reflect.Struct {
 			for i := 0; i < v.NumField(); i++ {
 				field := v.Type().Field(i)
 				tag := field.Tag.Get("json")
