@@ -1,21 +1,22 @@
-package jaeger
+package tracer
 
 import (
+	"context"
 	"testing"
 
-	"github.com/opentracing/opentracing-go"
 	"github.com/stretchr/testify/assert"
+	"go.opentelemetry.io/otel/propagation"
 )
 
 func TestInjectTextMapCarrier(t *testing.T) {
 	type args struct {
-		spanCtx opentracing.SpanContext
+		spanCtx context.Context
 	}
 
 	tests := []struct {
 		name    string
 		args    args
-		want    opentracing.TextMapCarrier
+		want    propagation.MapCarrier
 		wantErr bool
 	}{
 		{
@@ -23,7 +24,7 @@ func TestInjectTextMapCarrier(t *testing.T) {
 			args: args{
 				spanCtx: nil,
 			},
-			want:    opentracing.TextMapCarrier{},
+			want:    propagation.MapCarrier{},
 			wantErr: false,
 		},
 		{
@@ -31,7 +32,7 @@ func TestInjectTextMapCarrier(t *testing.T) {
 			args: args{
 				spanCtx: nil,
 			},
-			want:    opentracing.TextMapCarrier{},
+			want:    propagation.MapCarrier{},
 			wantErr: true,
 		},
 	}
