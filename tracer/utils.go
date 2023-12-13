@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"net/http"
 	"reflect"
-	"strings"
 	"time"
 
 	"cloud.google.com/go/pubsub"
@@ -137,7 +136,6 @@ func MetricLineCount(ctx context.Context, meter metric.Meter, data ...any) {
 	lineCounts.Add(ctx, 1, metric.WithAttributes(attributes...))
 
 }
-
 func BuildBaggage(args ...any) baggage.Baggage {
 	members := make([]baggage.Member, 0)
 
@@ -161,18 +159,31 @@ func BuildBaggage(args ...any) baggage.Baggage {
 
 	return bag
 }
+
 func BuildAttribute(args ...any) []attribute.KeyValue {
 	members := make([]attribute.KeyValue, 0)
 
 	for _, arg := range args {
-		v := reflect.ValueOf(arg)
-		for i := 0; i < v.NumField(); i++ {
-			member := attribute.KeyValue{
-				Key:   attribute.Key(strings.ToLower(v.Type().Field(i).Name)),
-				Value: v.Field(i).Interface().(attribute.Value),
-			}
-			members = append(members, member)
+		if arg == nil {
+			continue
+		}
 
+		v := reflect.ValueOf(arg)
+		if v.Kind() == reflect.Ptr {
+			v = v.Elem()
+		}
+
+		if v.Kind() == reflect.Struct {
+			for i := 0; i < v.NumField(); i++ {
+				field := v.Type().Field(i)
+				tag := field.Tag.Get("json")
+				if tag == "" {
+					continue
+				}
+
+				member := attribute.String(tag, v.Field(i).Elem().String())
+				members = append(members, member)
+			}
 		}
 	}
 
