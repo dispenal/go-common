@@ -3,13 +3,12 @@ package tracer
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"reflect"
+	"strings"
 	"time"
 
 	"cloud.google.com/go/pubsub"
-	common_utils "github.com/dispenal/go-common/utils"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/baggage"
@@ -26,14 +25,10 @@ func StartAndTrace(ctx context.Context, spanName string) (context.Context, trace
 }
 
 func StartAndTraceWithData(ctx context.Context, spanName string, data ...any) (context.Context, trace.Span) {
-	bag := BuildBaggage(data...)
 	attributes := BuildAttribute(data...)
-	defaultCtx := baggage.ContextWithBaggage(ctx, bag)
-
-	common_utils.LogInfo(fmt.Sprintf("Baggage: %s", bag.String()))
 
 	tracer := otel.GetTracerProvider().Tracer("")
-	spanCtx, span := tracer.Start(defaultCtx, spanName)
+	spanCtx, span := tracer.Start(ctx, spanName)
 
 	span.SetAttributes(attributes...)
 
@@ -52,10 +47,11 @@ func StartAndTraceHttp(r *http.Request, spanName string) (context.Context, trace
 
 func StartAndTracePubsub(ctx context.Context, spanName string, data *pubsub.Message) (context.Context, trace.Span) {
 	tracer := otel.GetTracerProvider().Tracer("")
-	spanCtx, span := tracer.Start(ctx, spanName)
 
 	propagator := otel.GetTextMapPropagator()
-	propagator.Inject(spanCtx, propagation.MapCarrier(data.Attributes))
+	propagator.Inject(ctx, propagation.MapCarrier(data.Attributes))
+
+	spanCtx, span := tracer.Start(ctx, spanName)
 
 	return spanCtx, span
 }
@@ -104,9 +100,11 @@ func TraceWithErr(span trace.Span, err error) error {
 	return err
 }
 
-func MetricLatency(ctx context.Context, span trace.Span, meter metric.Meter, attributes []attribute.KeyValue) {
+func MetricLatency(ctx context.Context, span trace.Span, meter metric.Meter, data ...any) {
 	startTime := time.Now()
 	latencyMs := float64(time.Since(startTime)) / 1e6
+
+	attributes := BuildAttribute(data...)
 
 	requestLatency, _ := meter.Float64Histogram(
 		"request_latency",
@@ -118,21 +116,23 @@ func MetricLatency(ctx context.Context, span trace.Span, meter metric.Meter, att
 	span.SetAttributes(attribute.Float64("latency", latencyMs))
 }
 
-func MetricCount(ctx context.Context, meter metric.Meter, attributes []attribute.KeyValue) {
+func MetricCount(ctx context.Context, meter metric.Meter, data ...any) {
 	requestCount, _ := meter.Int64Counter(
 		"request_counts",
 		metric.WithDescription("The number of requests processed"),
 	)
+	attributes := BuildAttribute(data...)
 
 	requestCount.Add(ctx, 1, metric.WithAttributes(attributes...))
 
 }
 
-func MetricLineCount(ctx context.Context, meter metric.Meter, attributes []attribute.KeyValue) {
+func MetricLineCount(ctx context.Context, meter metric.Meter, data ...any) {
 	lineCounts, _ := meter.Int64Counter(
 		"line_counts",
 		metric.WithDescription("The counts of the lines in"),
 	)
+	attributes := BuildAttribute(data...)
 
 	lineCounts.Add(ctx, 1, metric.WithAttributes(attributes...))
 
@@ -173,7 +173,7 @@ func BuildAttribute(args ...any) []attribute.KeyValue {
 			}
 
 			if v.Field(i).Kind() == reflect.String {
-				member := attribute.String(v.Type().Field(i).Name, v.Field(i).Interface().(string))
+				member := attribute.String(strings.ToLower(v.Type().Field(i).Name), v.Field(i).Interface().(string))
 				members = append(members, member)
 			}
 
