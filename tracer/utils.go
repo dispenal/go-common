@@ -27,7 +27,7 @@ func StartAndTraceWithData(ctx context.Context, spanName string, data ...any) (c
 	tracer := otel.GetTracerProvider().Tracer("")
 	spanCtx, span := tracer.Start(ctx, spanName)
 
-	bag := BuildBaggage(data)
+	bag := BuildBaggage(data...)
 	defaultCtx := baggage.ContextWithBaggage(spanCtx, bag)
 
 	return defaultCtx, span
