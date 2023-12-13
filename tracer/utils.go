@@ -172,12 +172,17 @@ func BuildAttribute(args ...any) []attribute.KeyValue {
 			continue
 		}
 
+		if reflect.TypeOf(arg).String() == "attribute.KeyValue" {
+			members = append(members, arg.(attribute.KeyValue))
+			continue
+		}
+
 		v := reflect.ValueOf(arg)
 		if v.Kind() == reflect.Ptr {
 			v = v.Elem()
 		}
 
-		if v.Kind() == reflect.Struct {
+		if v.Kind() == reflect.Struct || v.Kind() == reflect.Map {
 			for i := 0; i < v.NumField(); i++ {
 				field := v.Type().Field(i)
 				tag := field.Tag.Get("json")
