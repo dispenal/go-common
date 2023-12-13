@@ -41,7 +41,7 @@ func StartAndTraceHttp(r *http.Request, spanName string) (context.Context, trace
 	ctx := r.Context()
 
 	propagator := otel.GetTextMapPropagator()
-	propagator.Inject(ctx, propagation.HeaderCarrier(r.Header))
+	propagator.Extract(ctx, propagation.HeaderCarrier(r.Header))
 
 	spanCtx, span := tracer.Start(ctx, spanName)
 
