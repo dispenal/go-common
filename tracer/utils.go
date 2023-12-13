@@ -3,10 +3,14 @@ package tracer
 import (
 	"context"
 	"encoding/json"
+	"net/http"
+	"reflect"
 	"time"
 
+	"cloud.google.com/go/pubsub"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/baggage"
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/trace"
@@ -14,11 +18,37 @@ import (
 
 func StartAndTrace(ctx context.Context, spanName string) (context.Context, trace.Span) {
 	tracer := otel.GetTracerProvider().Tracer("")
-	meter := otel.GetMeterProvider().Meter("")
 	spanCtx, span := tracer.Start(ctx, spanName)
 
-	MetricLatency(spanCtx, span, meter, nil)
-	MetricCount(spanCtx, meter, nil)
+	return spanCtx, span
+}
+
+func StartAndTraceWithData(ctx context.Context, spanName string, data ...any) (context.Context, trace.Span) {
+	tracer := otel.GetTracerProvider().Tracer("")
+	spanCtx, span := tracer.Start(ctx, spanName)
+
+	bag := BuildBaggage(data)
+	defaultCtx := baggage.ContextWithBaggage(spanCtx, bag)
+
+	return defaultCtx, span
+}
+
+func StartAndTraceHttp(ctx context.Context, spanName string, r *http.Request) (context.Context, trace.Span) {
+	tracer := otel.GetTracerProvider().Tracer("")
+	spanCtx, span := tracer.Start(ctx, spanName)
+
+	propagator := otel.GetTextMapPropagator()
+	propagator.Inject(spanCtx, propagation.HeaderCarrier(r.Header))
+
+	return spanCtx, span
+}
+
+func StartAndTracePubsub(ctx context.Context, spanName string, data *pubsub.Message) (context.Context, trace.Span) {
+	tracer := otel.GetTracerProvider().Tracer("")
+	spanCtx, span := tracer.Start(ctx, spanName)
+
+	propagator := otel.GetTextMapPropagator()
+	propagator.Inject(spanCtx, propagation.MapCarrier(data.Attributes))
 
 	return spanCtx, span
 }
@@ -29,6 +59,7 @@ func InjectTextMapCarrier(spanCtx context.Context) (propagation.MapCarrier, erro
 
 	return m, nil
 }
+
 func ExtractTextMapCarrier(spanCtx context.Context) propagation.MapCarrier {
 	textMapCarrier, err := InjectTextMapCarrier(spanCtx)
 	if err != nil {
@@ -98,4 +129,28 @@ func MetricLineCount(ctx context.Context, meter metric.Meter, attributes []attri
 
 	lineCounts.Add(ctx, 1, metric.WithAttributes(attributes...))
 
+}
+
+func BuildBaggage(args ...any) baggage.Baggage {
+	members := make([]baggage.Member, 0)
+
+	for _, arg := range args {
+		v := reflect.ValueOf(arg)
+		for i := 0; i < v.NumField(); i++ {
+			isEmpty := v.Field(i).Interface() == ""
+			if isEmpty {
+				continue
+			}
+
+			if v.Field(i).Kind() == reflect.String {
+				member, _ := baggage.NewMember(v.Type().Field(i).Name, v.Field(i).Interface().(string))
+				members = append(members, member)
+			}
+
+		}
+	}
+
+	bag, _ := baggage.New(members...)
+
+	return bag
 }
