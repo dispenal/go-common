@@ -167,15 +167,11 @@ func BuildAttribute(args ...any) []attribute.KeyValue {
 	for _, arg := range args {
 		v := reflect.ValueOf(arg)
 		for i := 0; i < v.NumField(); i++ {
-			isEmpty := v.Field(i).Interface() == ""
-			if isEmpty {
-				continue
+			member := attribute.KeyValue{
+				Key:   attribute.Key(strings.ToLower(v.Type().Field(i).Name)),
+				Value: v.Field(i).Interface().(attribute.Value),
 			}
-
-			if v.Field(i).Kind() == reflect.String {
-				member := attribute.String(strings.ToLower(v.Type().Field(i).Name), v.Field(i).Interface().(string))
-				members = append(members, member)
-			}
+			members = append(members, member)
 
 		}
 	}
