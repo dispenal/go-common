@@ -3,6 +3,7 @@ package tracer
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"reflect"
 	"time"
@@ -181,10 +182,7 @@ func BuildAttribute(args ...any) []attribute.KeyValue {
 					continue
 				}
 
-				val, isBool := v.Field(i).Interface().(string)
-				if !isBool {
-					continue
-				}
+				val := fmt.Sprintf("%v", v.Field(i).Interface())
 
 				member := attribute.String(tag, val)
 				members = append(members, member)
