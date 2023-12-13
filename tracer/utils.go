@@ -187,7 +187,7 @@ func BuildAttribute(args ...any) []attribute.KeyValue {
 
 				val := fmt.Sprintf("%v", v.Field(i).Interface())
 
-				member := attribute.String(tag, val)
+				member := attribute.String(fmt.Sprintf("data.%s", tag), val)
 				members = append(members, member)
 			}
 		}
