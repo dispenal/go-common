@@ -1,11 +1,14 @@
 package middleware
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
 
+	"github.com/dispenal/go-common/tracer"
 	common_utils "github.com/dispenal/go-common/utils"
+	"go.opentelemetry.io/otel/codes"
 )
 
 func Recovery(next http.Handler) http.Handler {
@@ -44,6 +47,63 @@ func Recovery(next http.Handler) http.Handler {
 					}
 					statusCode = 500
 				}
+
+				common_utils.GenerateJsonResponse(w, nil, statusCode, errorMsgs[0]["message"].(string))
+			}
+		}()
+		next.ServeHTTP(w, r)
+	})
+}
+
+func RecoveryTracer(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer func() {
+			err := recover()
+			if err != nil {
+				_, span := tracer.StartAndTraceHttp(r, "userHandlerImpl.updateUser")
+				defer span.End()
+
+				var errorMsgs []map[string]interface{}
+				var error error
+				var statusCode int
+
+				appErr, isAppErr := err.(common_utils.AppError)
+				validationErr, isValidationErr := err.(common_utils.ValidationErrors)
+
+				if isAppErr {
+					messages := strings.Split(appErr.Message, "|")
+					errorMsg := fmt.Sprintf("APP ERROR (PANIC) %s", messages[0])
+					common_utils.LogError(errorMsg)
+
+					errorMsgs = []map[string]interface{}{
+						{"message": messages[1]},
+					}
+					statusCode = appErr.StatusCode
+					error = errors.New(errorMsg)
+				} else if isValidationErr {
+					errorMsg := fmt.Sprintf("VALIDATION ERROR (PANIC) %v", validationErr)
+					common_utils.LogError(errorMsg)
+
+					for _, err := range validationErr.Errors {
+						errorMsg := map[string]interface{}{
+							"message": err.Message,
+						}
+						errorMsgs = append(errorMsgs, errorMsg)
+					}
+					statusCode = validationErr.StatusCode
+					error = errors.New(errorMsg)
+				} else {
+					errorMsg := fmt.Sprintf("UNKNOWN ERROR (PANIC) %v", validationErr)
+					common_utils.LogError(errorMsg)
+					errorMsgs = []map[string]interface{}{
+						{"message": "internal server error"},
+					}
+					statusCode = 500
+					error = errors.New(errorMsg)
+				}
+
+				span.RecordError(error)
+				span.SetStatus(codes.Error, error.Error())
 
 				common_utils.GenerateJsonResponse(w, nil, statusCode, errorMsgs[0]["message"].(string))
 			}
