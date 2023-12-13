@@ -12,6 +12,17 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
+func StartAndTrace(ctx context.Context, spanName string) (context.Context, trace.Span) {
+	tracer := otel.GetTracerProvider().Tracer("")
+	meter := otel.GetMeterProvider().Meter("")
+	spanCtx, span := tracer.Start(ctx, spanName)
+
+	MetricLatency(spanCtx, span, meter, nil)
+	MetricCount(spanCtx, meter, nil)
+
+	return spanCtx, span
+}
+
 func InjectTextMapCarrier(spanCtx context.Context) (propagation.MapCarrier, error) {
 	m := make(propagation.MapCarrier)
 	otel.GetTextMapPropagator().Inject(spanCtx, propagation.MapCarrier{})
