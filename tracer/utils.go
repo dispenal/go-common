@@ -24,13 +24,13 @@ func StartAndTrace(ctx context.Context, spanName string) (context.Context, trace
 }
 
 func StartAndTraceWithData(ctx context.Context, spanName string, data ...any) (context.Context, trace.Span) {
-	tracer := otel.GetTracerProvider().Tracer("")
-	spanCtx, span := tracer.Start(ctx, spanName)
-
 	bag := BuildBaggage(data...)
-	defaultCtx := baggage.ContextWithBaggage(spanCtx, bag)
+	defaultCtx := baggage.ContextWithBaggage(ctx, bag)
 
-	return defaultCtx, span
+	tracer := otel.GetTracerProvider().Tracer("")
+	spanCtx, span := tracer.Start(defaultCtx, spanName)
+
+	return spanCtx, span
 }
 
 func StartAndTraceHttp(r *http.Request, spanName string) (context.Context, trace.Span) {
