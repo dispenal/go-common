@@ -181,7 +181,12 @@ func BuildAttribute(args ...any) []attribute.KeyValue {
 					continue
 				}
 
-				member := attribute.String(tag, v.Field(i).Elem().String())
+				val, isBool := v.Field(i).Interface().(string)
+				if !isBool {
+					continue
+				}
+
+				member := attribute.String(tag, val)
 				members = append(members, member)
 			}
 		}
