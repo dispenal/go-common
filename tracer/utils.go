@@ -3,11 +3,13 @@ package tracer
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"reflect"
 	"time"
 
 	"cloud.google.com/go/pubsub"
+	common_utils "github.com/dispenal/go-common/utils"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/baggage"
@@ -27,6 +29,8 @@ func StartAndTraceWithData(ctx context.Context, spanName string, data ...any) (c
 	bag := BuildBaggage(data...)
 	attributes := BuildAttribute(data...)
 	defaultCtx := baggage.ContextWithBaggage(ctx, bag)
+
+	common_utils.LogInfo(fmt.Sprintf("Baggage: %s", bag.String()))
 
 	tracer := otel.GetTracerProvider().Tracer("")
 	spanCtx, span := tracer.Start(defaultCtx, spanName)
