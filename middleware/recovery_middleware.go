@@ -60,7 +60,7 @@ func RecoveryTracer(next http.Handler) http.Handler {
 		defer func() {
 			err := recover()
 			if err != nil {
-				_, span := tracer.StartAndTrace(r.Context(), "panic.recovery")
+				_, span := tracer.StartAndTraceHttp(r, "panic.recovery")
 				defer span.End()
 
 				var errorMsgs []map[string]interface{}
