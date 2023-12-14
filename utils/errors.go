@@ -62,8 +62,6 @@ func PanicIfAppErrorWithTrace(ctx context.Context, err error, message string, st
 		span.RecordError(customErr)
 		span.SetAttributes(attribute.Bool("error", true))
 
-		span.End()
-
 		PanicIfError(customErr)
 	}
 }
