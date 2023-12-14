@@ -8,7 +8,6 @@ import (
 
 	"github.com/dispenal/go-common/tracer"
 	common_utils "github.com/dispenal/go-common/utils"
-	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
@@ -59,7 +58,7 @@ func Recovery(next http.Handler) http.Handler {
 }
 
 func RecoveryTracer(next http.Handler) http.Handler {
-	return otelhttp.NewHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			err := recover()
 			if err != nil {
@@ -124,5 +123,5 @@ func RecoveryTracer(next http.Handler) http.Handler {
 			}
 		}()
 		next.ServeHTTP(w, r)
-	}), "panic")
+	})
 }

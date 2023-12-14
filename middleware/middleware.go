@@ -7,12 +7,15 @@ import (
 	common_utils "github.com/dispenal/go-common/utils"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
 func SetupMiddleware(route *chi.Mux, config *common_utils.BaseConfig) {
 	if config.ServiceEnv == common_utils.TEST || config.ServiceEnv == common_utils.DEVELOPMENT {
+		route.Use(otelhttp.NewMiddleware("http-server", otelhttp.WithPublicEndpoint()))
 		route.Use(RecoveryTracer)
 	} else {
+		route.Use(otelhttp.NewMiddleware("http-server", otelhttp.WithPublicEndpoint()))
 		route.Use(middleware.RequestID)
 		route.Use(middleware.RealIP)
 		route.Use(middleware.Logger)
