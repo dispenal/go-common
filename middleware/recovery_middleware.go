@@ -63,6 +63,7 @@ func RecoveryTracer(next http.Handler) http.Handler {
 			err := recover()
 			if err != nil {
 				span := trace.SpanFromContext(r.Context())
+				defer span.End()
 
 				var errorMsgs []map[string]interface{}
 				var appError error
@@ -117,8 +118,6 @@ func RecoveryTracer(next http.Handler) http.Handler {
 
 					span.SetAttributes(attributes...)
 				}
-
-				span.End()
 
 				common_utils.GenerateJsonResponse(w, nil, statusCode, errorMsgs[0]["message"].(string))
 			}
