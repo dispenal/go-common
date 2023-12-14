@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	jwtMaker "github.com/dispenal/go-common/jwt"
+	"github.com/dispenal/go-common/tracer"
 	common_utils "github.com/dispenal/go-common/utils"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
@@ -33,6 +34,9 @@ func NewAuthMiddleware(jwt jwtMaker.JWT) AuthMiddleware {
 
 func (m *AuthMiddlewareImpl) CheckIsAuthenticated(next http.Handler) http.Handler {
 	return otelhttp.NewHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, span := tracer.StartSpan(r.Context())
+		defer span.End()
+
 		header := r.Header.Get("Authorization")
 
 		if header == "" || !strings.Contains(header, "Bearer ") {

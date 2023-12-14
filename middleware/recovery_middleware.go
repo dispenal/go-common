@@ -62,7 +62,6 @@ func RecoveryTracer(next http.Handler) http.Handler {
 		_, span := tracer.StartSpan(r.Context())
 
 		defer func() {
-			span.End(trace.WithStackTrace(true))
 
 			err := recover()
 			if err != nil {
@@ -120,6 +119,7 @@ func RecoveryTracer(next http.Handler) http.Handler {
 					span.SetAttributes(attributes...)
 				}
 
+				span.End(trace.WithStackTrace(true))
 				common_utils.GenerateJsonResponse(w, nil, statusCode, errorMsgs[0]["message"].(string))
 			}
 		}()
