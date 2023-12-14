@@ -109,7 +109,7 @@ func RecoveryTracer(next http.Handler) http.Handler {
 
 				headers := make(map[string]string)
 				for k, v := range r.Header {
-					headers[strings.ToLower(k)] = v[0]
+					headers[k] = v[0]
 				}
 				attributes := tracer.BuildAttribute(headers)
 
