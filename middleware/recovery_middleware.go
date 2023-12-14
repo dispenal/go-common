@@ -8,7 +8,6 @@ import (
 
 	"github.com/dispenal/go-common/tracer"
 	common_utils "github.com/dispenal/go-common/utils"
-	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
 )
@@ -108,7 +107,6 @@ func RecoveryTracer(next http.Handler) http.Handler {
 				if span.IsRecording() {
 					span.RecordError(appError)
 					span.SetStatus(codes.Error, appError.Error())
-					span.SetAttributes(attribute.Bool("error", true))
 
 					headers := make(map[string]string)
 					for k, v := range r.Header {
