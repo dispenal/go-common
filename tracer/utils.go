@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"reflect"
+	"runtime"
 	"strings"
 	"time"
 
@@ -17,6 +18,13 @@ import (
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/trace"
 )
+
+func StartSpan(ctx context.Context) (context.Context, trace.Span) {
+	tracer := otel.GetTracerProvider().Tracer("")
+	pc, _, _, _ := runtime.Caller(1)
+	details := runtime.FuncForPC(pc)
+	return tracer.Start(ctx, details.Name())
+}
 
 func StartAndTrace(ctx context.Context, spanName string) (context.Context, trace.Span) {
 	tracer := otel.GetTracerProvider().Tracer("")
