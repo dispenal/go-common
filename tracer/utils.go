@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"reflect"
+	"strings"
 	"time"
 
 	"cloud.google.com/go/pubsub"
@@ -45,13 +46,7 @@ func StartAndTraceHttp(r *http.Request, spanName string) (context.Context, trace
 
 	spanCtx, span := tracer.Start(ctx, spanName)
 
-	headers := make(map[string]string)
-	for k, v := range r.Header {
-		headers[k] = v[0]
-	}
-	attributes := BuildAttribute(headers)
-
-	span.SetAttributes(attributes...)
+	SetHttpAttributes(span, r)
 
 	return spanCtx, span
 }
@@ -151,6 +146,16 @@ func MetricLineCount(ctx context.Context, meter metric.Meter, data ...any) {
 	lineCounts.Add(ctx, 1, metric.WithAttributes(attributes...))
 
 }
+
+func SetHttpAttributes(span trace.Span, r *http.Request) {
+	headers := make(map[string]string)
+	for k, v := range r.Header {
+		headers[strings.ToLower(k)] = v[0]
+	}
+	attributes := BuildAttribute(headers)
+	span.AddEvent("Headers", trace.WithAttributes(attributes...))
+}
+
 func BuildBaggage(args ...any) baggage.Baggage {
 	members := make([]baggage.Member, 0)
 
