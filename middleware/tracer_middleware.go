@@ -3,16 +3,9 @@ package middleware
 import (
 	"net/http"
 
-	"github.com/dispenal/go-common/tracer"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
 func TraceHttp(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		spanCtx, span := tracer.StartAndTraceHttp(r, "middleware.TraceHttp")
-
-		defer span.End()
-
-		ctx := r.WithContext(spanCtx)
-		next.ServeHTTP(w, ctx)
-	})
+	return otelhttp.NewHandler(next, "http-server")
 }
