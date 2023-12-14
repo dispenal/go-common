@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/dispenal/go-common/tracer"
 	common_utils "github.com/dispenal/go-common/utils"
 	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
 )
 
 func Recovery(next http.Handler) http.Handler {
@@ -60,8 +60,7 @@ func RecoveryTracer(next http.Handler) http.Handler {
 		defer func() {
 			err := recover()
 			if err != nil {
-				_, span := tracer.StartAndTraceHttp(r, "panic.recovery")
-				defer span.End()
+				span := trace.SpanFromContext(r.Context())
 
 				var errorMsgs []map[string]interface{}
 				var appError error
@@ -106,6 +105,7 @@ func RecoveryTracer(next http.Handler) http.Handler {
 				span.RecordError(appError)
 				span.SetStatus(codes.Error, appError.Error())
 
+				span.End()
 				common_utils.GenerateJsonResponse(w, nil, statusCode, errorMsgs[0]["message"].(string))
 			}
 		}()
