@@ -1,6 +1,7 @@
 package common_utils
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 	"strings"
@@ -53,8 +54,9 @@ func PanicIfAppError(err error, message string, statusCode int) {
 	}
 }
 
-func PanicIfAppErrorWithTrace(span trace.Span, err error, message string, statusCode int) {
+func PanicIfAppErrorWithTrace(ctx context.Context, err error, message string, statusCode int) {
 	if err != nil {
+		span := trace.SpanFromContext(ctx)
 		defer span.End()
 
 		customErr := CustomErrorWithTrace(err, message, statusCode)
