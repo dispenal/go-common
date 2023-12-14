@@ -4,17 +4,15 @@ import (
 	"net/http"
 
 	"github.com/dispenal/go-common/tracer"
-	"go.opentelemetry.io/otel/trace"
 )
 
 func TraceHttp(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		span := trace.SpanFromContext(r.Context())
-
-		span.SetAttributes(tracer.BuildAttribute(r.Header)...)
+		spanCtx, span := tracer.StartAndTraceHttp(r, "middleware.TraceHttp")
 
 		defer span.End()
 
-		next.ServeHTTP(w, r)
+		ctx := r.WithContext(spanCtx)
+		next.ServeHTTP(w, ctx)
 	})
 }
