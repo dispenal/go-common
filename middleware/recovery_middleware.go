@@ -62,6 +62,7 @@ func RecoveryTracer(next http.Handler) http.Handler {
 			if err != nil {
 
 				span := trace.SpanFromContext(r.Context())
+				defer span.End()
 
 				var errorMsgs []map[string]interface{}
 				var error error
