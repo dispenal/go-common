@@ -45,15 +45,13 @@ func StartAndTraceHttp(r *http.Request, spanName string) (context.Context, trace
 
 	spanCtx, span := tracer.Start(ctx, spanName)
 
-	if !span.IsRecording() {
-		headers := make(map[string]string)
-		for k, v := range r.Header {
-			headers[k] = v[0]
-		}
-		attributes := BuildAttribute(headers)
-
-		span.SetAttributes(attributes...)
+	headers := make(map[string]string)
+	for k, v := range r.Header {
+		headers[k] = v[0]
 	}
+	attributes := BuildAttribute(headers)
+
+	span.SetAttributes(attributes...)
 
 	return spanCtx, span
 }
