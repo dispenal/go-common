@@ -6,6 +6,7 @@ import (
 
 	jwtMaker "github.com/dispenal/go-common/jwt"
 	common_utils "github.com/dispenal/go-common/utils"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
 const (
@@ -31,7 +32,7 @@ func NewAuthMiddleware(jwt jwtMaker.JWT) AuthMiddleware {
 }
 
 func (m *AuthMiddlewareImpl) CheckIsAuthenticated(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	return otelhttp.NewHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		header := r.Header.Get("Authorization")
 
 		if header == "" || !strings.Contains(header, "Bearer ") {
@@ -55,11 +56,11 @@ func (m *AuthMiddlewareImpl) CheckIsAuthenticated(next http.Handler) http.Handle
 		ctx := r.WithContext(jwtMaker.AppendRequestCtx(r, jwtMaker.JWT_PAYLOAD, payload))
 
 		next.ServeHTTP(w, ctx)
-	})
+	}), "middleware.CheckIsAuthenticated")
 }
 
 func (m *AuthMiddlewareImpl) CheckIsRefresh(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	return otelhttp.NewHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		header := r.Header.Get("Authorization")
 
 		if header == "" || !strings.Contains(header, "Bearer ") {
@@ -83,11 +84,11 @@ func (m *AuthMiddlewareImpl) CheckIsRefresh(next http.Handler) http.Handler {
 		ctx := r.WithContext(jwtMaker.AppendRequestCtx(r, jwtMaker.JWT_PAYLOAD, payload))
 
 		next.ServeHTTP(w, ctx)
-	})
+	}), "middleware.CheckIsRefresh")
 }
 
 func (m *AuthMiddlewareImpl) CheckIsAdmin(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	return otelhttp.NewHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		header := r.Header.Get("Authorization")
 
 		if header == "" || !strings.Contains(header, "Bearer ") {
@@ -115,5 +116,5 @@ func (m *AuthMiddlewareImpl) CheckIsAdmin(next http.Handler) http.Handler {
 		ctx := r.WithContext(jwtMaker.AppendRequestCtx(r, jwtMaker.JWT_PAYLOAD, payload))
 
 		next.ServeHTTP(w, ctx)
-	})
+	}), "middleware.CheckIsAdmin")
 }
