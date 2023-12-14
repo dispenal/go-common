@@ -61,6 +61,8 @@ func RecoveryTracer(next http.Handler) http.Handler {
 			err := recover()
 			if err != nil {
 				_, span := tracer.StartSpan(r.Context())
+				span.SetName("middleware.RecoveryTracer")
+
 				defer span.End()
 
 				var errorMsgs []map[string]interface{}
