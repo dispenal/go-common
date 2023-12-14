@@ -9,7 +9,6 @@ import (
 	"github.com/dispenal/go-common/tracer"
 	common_utils "github.com/dispenal/go-common/utils"
 	"go.opentelemetry.io/otel/codes"
-	"go.opentelemetry.io/otel/trace"
 )
 
 func Recovery(next http.Handler) http.Handler {
@@ -62,7 +61,7 @@ func RecoveryTracer(next http.Handler) http.Handler {
 			err := recover()
 			if err != nil {
 				_, span := tracer.StartSpan(r.Context())
-				defer span.End(trace.WithStackTrace(true))
+				defer span.End()
 
 				var errorMsgs []map[string]interface{}
 				var appError error
