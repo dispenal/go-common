@@ -111,7 +111,6 @@ func TraceWithErr(ctx context.Context, err error) error {
 
 		span.RecordError(err)
 		span.SetAttributes(attribute.Bool("error", true))
-		span.SetAttributes(attribute.String("error_code", err.Error()))
 	}
 
 	return err

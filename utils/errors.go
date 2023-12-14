@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 )
@@ -62,7 +61,6 @@ func PanicIfAppErrorWithTrace(ctx context.Context, err error, message string, st
 		customErr := CustomErrorWithTrace(err, message, statusCode)
 
 		span.RecordError(customErr)
-		span.SetStatus(codes.Error, customErr.Error())
 		span.SetAttributes(attribute.Bool("error", true))
 
 		PanicIfError(customErr)
