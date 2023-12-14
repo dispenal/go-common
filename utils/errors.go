@@ -1,10 +1,14 @@
 package common_utils
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 	"strings"
 
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 )
 
@@ -46,6 +50,21 @@ func PanicIfError(err error) {
 func PanicIfAppError(err error, message string, statusCode int) {
 	if err != nil {
 		customErr := CustomErrorWithTrace(err, message, statusCode)
+		PanicIfError(customErr)
+	}
+}
+
+func PanicIfAppErrorWithTrace(ctx context.Context, err error, message string, statusCode int) {
+	if err != nil {
+		span := trace.SpanFromContext(ctx)
+		defer span.End()
+
+		customErr := CustomErrorWithTrace(err, message, statusCode)
+
+		span.RecordError(customErr)
+		span.SetStatus(codes.Error, customErr.Error())
+		span.SetAttributes(attribute.Bool("error", true))
+
 		PanicIfError(customErr)
 	}
 }
