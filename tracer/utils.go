@@ -97,14 +97,18 @@ func ExtractTextMapCarrierBytes(spanCtx context.Context) []byte {
 	return dataBytes
 }
 
-func TraceErr(span trace.Span, err error) {
+func TraceErr(ctx context.Context, err error) {
+	span := trace.SpanFromContext(ctx)
+
 	span.RecordError(err)
 	span.SetAttributes(attribute.Bool("error", true))
 	span.SetAttributes(attribute.String("error_code", err.Error()))
 }
 
-func TraceWithErr(span trace.Span, err error) error {
+func TraceWithErr(ctx context.Context, err error) error {
 	if err != nil {
+		span := trace.SpanFromContext(ctx)
+
 		span.RecordError(err)
 		span.SetAttributes(attribute.Bool("error", true))
 		span.SetAttributes(attribute.String("error_code", err.Error()))
