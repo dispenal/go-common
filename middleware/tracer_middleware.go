@@ -7,5 +7,5 @@ import (
 )
 
 func TraceHttp(next http.Handler) http.Handler {
-	return otelhttp.NewHandler(next, "http-server")
+	return otelhttp.NewHandler(next, "http-request", otelhttp.WithPublicEndpoint())
 }
