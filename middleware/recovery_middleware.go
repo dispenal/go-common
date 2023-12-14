@@ -62,6 +62,7 @@ func RecoveryTracer(next http.Handler) http.Handler {
 		_, span := tracer.StartSpan(r.Context())
 
 		defer func() {
+			defer span.End(trace.WithStackTrace(true))
 
 			err := recover()
 			if err != nil {
@@ -106,22 +107,20 @@ func RecoveryTracer(next http.Handler) http.Handler {
 					statusCode = 500
 				}
 
-				if span.IsRecording() {
-					span.RecordError(appError)
-					span.SetStatus(codes.Error, appError.Error())
+				span.RecordError(appError)
+				span.SetStatus(codes.Error, appError.Error())
 
-					headers := make(map[string]string)
-					for k, v := range r.Header {
-						headers[k] = v[0]
-					}
-					attributes := tracer.BuildAttribute(headers)
-
-					span.SetAttributes(attributes...)
+				headers := make(map[string]string)
+				for k, v := range r.Header {
+					headers[k] = v[0]
 				}
+				attributes := tracer.BuildAttribute(headers)
 
-				span.End(trace.WithStackTrace(true))
+				span.SetAttributes(attributes...)
+
 				common_utils.GenerateJsonResponse(w, nil, statusCode, errorMsgs[0]["message"].(string))
 			}
+
 		}()
 		next.ServeHTTP(w, r)
 	}), "middleware.RecoveryTracer")
