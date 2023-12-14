@@ -74,15 +74,16 @@ func RecoveryTracer(next http.Handler) http.Handler {
 					messages := strings.Split(appErr.Message, "|")
 					errorMsg := fmt.Sprintf("APP ERROR (PANIC) %s", messages[0])
 					common_utils.LogError(errorMsg)
+					appError = errors.New(errorMsg)
 
 					errorMsgs = []map[string]interface{}{
 						{"message": messages[1]},
 					}
 					statusCode = appErr.StatusCode
-					appError = errors.New(errorMsg)
 				} else if isValidationErr {
 					errorMsg := fmt.Sprintf("VALIDATION ERROR (PANIC) %v", validationErr)
 					common_utils.LogError(errorMsg)
+					appError = errors.New(errorMsg)
 
 					for _, err := range validationErr.Errors {
 						errorMsg := map[string]interface{}{
@@ -91,15 +92,15 @@ func RecoveryTracer(next http.Handler) http.Handler {
 						errorMsgs = append(errorMsgs, errorMsg)
 					}
 					statusCode = validationErr.StatusCode
-					appError = errors.New(errorMsg)
 				} else {
 					errorMsg := fmt.Sprintf("UNKNOWN ERROR (PANIC) %v", validationErr)
 					common_utils.LogError(errorMsg)
+					appError = errors.New(errorMsg)
+
 					errorMsgs = []map[string]interface{}{
 						{"message": "internal server error"},
 					}
 					statusCode = 500
-					appError = errors.New(errorMsg)
 				}
 
 				span.RecordError(appError)
