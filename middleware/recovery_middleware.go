@@ -64,7 +64,7 @@ func RecoveryTracer(next http.Handler) http.Handler {
 				defer span.End()
 
 				var errorMsgs []map[string]interface{}
-				var error error
+				var appError error
 				var statusCode int
 
 				appErr, isAppErr := err.(common_utils.AppError)
@@ -79,7 +79,7 @@ func RecoveryTracer(next http.Handler) http.Handler {
 						{"message": messages[1]},
 					}
 					statusCode = appErr.StatusCode
-					error = errors.New(errorMsg)
+					appError = errors.New(errorMsg)
 				} else if isValidationErr {
 					errorMsg := fmt.Sprintf("VALIDATION ERROR (PANIC) %v", validationErr)
 					common_utils.LogError(errorMsg)
@@ -91,7 +91,7 @@ func RecoveryTracer(next http.Handler) http.Handler {
 						errorMsgs = append(errorMsgs, errorMsg)
 					}
 					statusCode = validationErr.StatusCode
-					error = errors.New(errorMsg)
+					appError = errors.New(errorMsg)
 				} else {
 					errorMsg := fmt.Sprintf("UNKNOWN ERROR (PANIC) %v", validationErr)
 					common_utils.LogError(errorMsg)
@@ -99,11 +99,11 @@ func RecoveryTracer(next http.Handler) http.Handler {
 						{"message": "internal server error"},
 					}
 					statusCode = 500
-					error = errors.New(errorMsg)
+					appError = errors.New(errorMsg)
 				}
 
-				span.RecordError(error)
-				span.SetStatus(codes.Error, error.Error())
+				span.RecordError(appError)
+				span.SetStatus(codes.Error, appError.Error())
 
 				common_utils.GenerateJsonResponse(w, nil, statusCode, errorMsgs[0]["message"].(string))
 			}
