@@ -35,7 +35,7 @@ func (m *AuthMiddlewareImpl) CheckIsAuthenticated(next http.Handler) http.Handle
 		header := r.Header.Get("Authorization")
 
 		if header == "" || !strings.Contains(header, "Bearer ") {
-			common_utils.PanicIfError(common_utils.CustomError("unauthorized", 401))
+			common_utils.PanicAppError("unauthorized", 401)
 		}
 
 		token := strings.Split(header, " ")[1]
