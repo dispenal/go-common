@@ -12,9 +12,7 @@ import (
 func SetupMiddleware(route *chi.Mux, config *common_utils.BaseConfig) {
 	if config.ServiceEnv == common_utils.TEST || config.ServiceEnv == common_utils.DEVELOPMENT {
 		route.Use(RecoveryTracer)
-		route.Use(TraceHttp)
 	} else {
-		route.Use(TraceHttp)
 		route.Use(middleware.RequestID)
 		route.Use(middleware.RealIP)
 		route.Use(middleware.Logger)
