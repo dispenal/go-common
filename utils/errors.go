@@ -56,12 +56,13 @@ func PanicIfAppError(err error, message string, statusCode int) {
 func PanicIfAppErrorWithTrace(ctx context.Context, err error, message string, statusCode int) {
 	if err != nil {
 		span := trace.SpanFromContext(ctx)
-		defer span.End()
 
 		customErr := CustomErrorWithTrace(err, message, statusCode)
 
 		span.RecordError(customErr)
 		span.SetAttributes(attribute.Bool("error", true))
+
+		span.End()
 
 		PanicIfError(customErr)
 	}
