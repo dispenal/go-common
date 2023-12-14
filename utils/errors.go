@@ -55,6 +55,8 @@ func PanicIfAppError(err error, message string, statusCode int) {
 
 func PanicIfAppErrorWithTrace(span trace.Span, err error, message string, statusCode int) {
 	if err != nil {
+		defer span.End()
+
 		customErr := CustomErrorWithTrace(err, message, statusCode)
 
 		span.RecordError(customErr)
