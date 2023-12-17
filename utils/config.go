@@ -50,6 +50,12 @@ type BaseConfig struct {
 	JwtSecretKey          string        `mapstructure:"JWT_SECRET_KEY"`
 	JwtAccessTokenExpire  time.Duration `mapstructure:"JWT_ACCESS_TOKEN_EXPIRE"`
 	JwtRefreshTokenExpire time.Duration `mapstructure:"JWT_REFRESH_TOKEN_EXPIRE"`
+	KafkaBrokers          []string      `mapstructure:"KAFKA_BROKERS"`
+	KafkaTopics           []string      `mapstructure:"KAFKA_TOPICS"`
+	KafkaGroupID          string        `mapstructure:"KAFKA_GROUP_ID"`
+	KafkaDlqTopic         string        `mapstructure:"KAFKA_DLQ_TOPIC"`
+	KafkaDlqRetry         int           `mapstructure:"KAFKA_DLQ_RETRY"`
+	KafkaAutoCommit       bool          `mapstructure:"KAFKA_AUTO_COMMIT"`
 }
 
 func LoadBaseConfig(path string, configName string) (*BaseConfig, error) {
