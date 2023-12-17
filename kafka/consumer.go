@@ -75,15 +75,14 @@ func (k *Client) Listen(ctx context.Context, handler KafkaHandler) error {
 					Body:      m.Value,
 					Timestamp: m.Time.Unix(),
 					Key:       string(m.Key),
-					Commit: func() {
+					Commit: func() error {
 						if err := r.CommitMessages(ctx, m); err != nil {
-							common_utils.LogError(fmt.Sprintf("failed to commit messages: %v", err))
+							return err
 						}
+						return nil
 					},
-					MoveToDLQ: func() {
-						if err := r.CommitMessages(ctx, m); err != nil {
-							common_utils.LogError(fmt.Sprintf("failed to commit messages: %v", err))
-						}
+					MoveToDLQ: func() error {
+						return k.publishToDLQ(ctx, m)
 					},
 				}
 

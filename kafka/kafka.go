@@ -34,8 +34,8 @@ type Message struct {
 	Body          []byte `json:"body,omitempty"`
 	Timestamp     int64  `json:"timestamp,omitempty"`
 	ConsumerGroup string `json:"consumer_group,omitempty"`
-	Commit        func()
-	MoveToDLQ     func()
+	Commit        func() error
+	MoveToDLQ     func() error
 	Headers       map[string]string
 }
 
