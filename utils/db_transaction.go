@@ -15,14 +15,14 @@ const deadLockErrorMsg = "pq: unexpected Parse response 'D'"
 const badConnectionErrMsg = "driver: bad connection"
 const txAbortingErrMsg = "pq: Could not complete operation in a failed transaction"
 
-func ExecTx(ctx context.Context, pgxPool *pgxpool.Pool, fn func(tx *pgx.Tx) error) error {
+func ExecTx(ctx context.Context, pgxPool *pgxpool.Pool, fn func(tx pgx.Tx) error) error {
 
 	tx, err := pgxPool.BeginTx(ctx, pgx.TxOptions{})
 	if err != nil {
 		return err
 	}
 
-	err = fn(&tx)
+	err = fn(tx)
 	if err != nil {
 		if rbErr := tx.Rollback(ctx); rbErr != nil {
 			return fmt.Errorf("tx err: %v, rb err: %v", err, rbErr)
@@ -33,14 +33,14 @@ func ExecTx(ctx context.Context, pgxPool *pgxpool.Pool, fn func(tx *pgx.Tx) erro
 	return tx.Commit(ctx)
 }
 
-func ExecTxWithRetry(ctx context.Context, pgxPool *pgxpool.Pool, fn func(tx *pgx.Tx) error) error {
+func ExecTxWithRetry(ctx context.Context, pgxPool *pgxpool.Pool, fn func(tx pgx.Tx) error) error {
 	var retryFunc = func() error {
 		tx, err := pgxPool.BeginTx(ctx, pgx.TxOptions{})
 		if err != nil {
 			return err
 		}
 
-		err = fn(&tx)
+		err = fn(tx)
 		if err != nil {
 			if rbErr := tx.Rollback(ctx); rbErr != nil {
 				return fmt.Errorf("tx err: %v, rb err: %v", err, rbErr)
