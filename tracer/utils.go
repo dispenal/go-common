@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"cloud.google.com/go/pubsub"
+	common_utils "github.com/dispenal/go-common/utils"
 	"github.com/segmentio/kafka-go"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -85,18 +86,13 @@ func InjectTextHeaderCarrier(spanCtx context.Context) (propagation.HeaderCarrier
 	return m, nil
 }
 
-func TextHeaderCarrierToKafkaMessageHeaders(hederMap propagation.HeaderCarrier) []kafka.Header {
-	headers := make([]kafka.Header, 0, len(hederMap))
+func TextMapCarrierToKafkaMessageHeaders(textMap propagation.MapCarrier) []kafka.Header {
+	headers := make([]kafka.Header, 0, len(textMap))
 
-	for k, v := range hederMap {
-		val, err := json.Marshal(v)
-		if err != nil {
-			continue
-		}
-
+	for k, v := range textMap {
 		headers = append(headers, kafka.Header{
 			Key:   k,
-			Value: val,
+			Value: []byte(v),
 		})
 	}
 
@@ -125,12 +121,13 @@ func ExtractTextMapCarrierBytes(spanCtx context.Context) []byte {
 }
 
 func GetKafkaTracingHeadersFromSpanCtx(spanCtx context.Context) []kafka.Header {
-	textMapCarrier, err := InjectTextHeaderCarrier(spanCtx)
+	textMapCarrier, err := InjectTextMapCarrier(spanCtx)
 	if err != nil {
+		common_utils.LogError("failed to extract tracing headers from span context")
 		return []kafka.Header{}
 	}
 
-	kafkaMessageHeaders := TextHeaderCarrierToKafkaMessageHeaders(textMapCarrier)
+	kafkaMessageHeaders := TextMapCarrierToKafkaMessageHeaders(textMapCarrier)
 	return kafkaMessageHeaders
 }
 
