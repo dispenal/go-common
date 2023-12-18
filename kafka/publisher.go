@@ -90,6 +90,7 @@ func (k *Client) PublishWithTracer(ctx context.Context, topic string, msg any) e
 	}
 
 	dataSender, err := json.Marshal(msg)
+	span.RecordError(err)
 	if err != nil {
 		return errors.New("message of data sender can not marshal")
 	}
@@ -111,6 +112,7 @@ func (k *Client) PublishWithTracer(ctx context.Context, topic string, msg any) e
 			Value:   dataSender,
 			Headers: headers,
 		})
+		span.RecordError(err)
 
 		if errors.Is(err, kafka.LeaderNotAvailable) || errors.Is(err, context.DeadlineExceeded) {
 			time.Sleep(time.Millisecond * 250)
