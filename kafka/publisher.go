@@ -10,6 +10,7 @@ import (
 	common_utils "github.com/dispenal/go-common/utils"
 	"github.com/segmentio/kafka-go"
 	"github.com/segmentio/kafka-go/protocol"
+	"go.opentelemetry.io/otel/codes"
 )
 
 func (k *Client) IsReaderConnected() bool {
@@ -83,15 +84,18 @@ func (k *Client) PublishWithTracer(ctx context.Context, topic string, msg any) e
 	defer span.End()
 
 	if !k.IsWriters() {
+		span.SetStatus(codes.Error, "writers not created")
 		return errors.New("writers not created")
 	}
 	if topic == "" {
+		span.SetStatus(codes.Error, "topic not empty")
 		return errors.New("topic not empty")
 	}
 
 	dataSender, err := json.Marshal(msg)
 	span.RecordError(err)
 	if err != nil {
+		span.SetStatus(codes.Error, err.Error())
 		return errors.New("message of data sender can not marshal")
 	}
 	headers := tracer.GetKafkaTracingHeadersFromSpanCtx(spanCtx)
@@ -120,6 +124,7 @@ func (k *Client) PublishWithTracer(ctx context.Context, topic string, msg any) e
 		}
 
 		if err != nil {
+			span.SetStatus(codes.Error, err.Error())
 			return err
 		}
 		break
