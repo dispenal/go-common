@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/dispenal/go-common/tracer"
 	common_utils "github.com/dispenal/go-common/utils"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -47,6 +48,7 @@ func NewPgxConn(cfg *common_utils.BaseConfig) (*pgxpool.Pool, error) {
 	poolCfg.MaxConnIdleTime = maxConnIdleTime
 	poolCfg.MaxConnLifetime = maxConnLifetime
 	poolCfg.MinConns = minConns
+	poolCfg.ConnConfig.Tracer = new(tracer.PgxTracer)
 
 	connPool, err := pgxpool.NewWithConfig(ctx, poolCfg)
 	if err != nil {
