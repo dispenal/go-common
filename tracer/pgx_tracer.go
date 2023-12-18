@@ -17,8 +17,10 @@ type PgxTracer struct {
 }
 
 func (t *PgxTracer) TraceQueryStart(ctx context.Context, conn *pgx.Conn, data pgx.TraceQueryStartData) context.Context {
-	spanCtx, span := StartAndTraceWithData(ctx, "pgx.Query.Start", data)
+	spanCtx, span := StartSpan(ctx)
 	defer span.End()
+
+	span.SetAttributes(BuildAttribute(data)...)
 
 	return spanCtx
 }
