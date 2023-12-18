@@ -39,7 +39,7 @@ func (k *Client) CreateTopic(topic string, numPart int) error {
 			{
 				Topic:             topic,
 				NumPartitions:     numPart,
-				ReplicationFactor: 3,
+				ReplicationFactor: k.cfg.KafkaReplicationFactor,
 			},
 		},
 	})

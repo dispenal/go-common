@@ -24,7 +24,7 @@ func (k *Client) NewPublisher() error {
 		Addr:                   kafka.TCP(k.cfg.KafkaBrokers...),
 		Balancer:               &kafka.RoundRobin{},
 		BatchTimeout:           15 * time.Millisecond,
-		AllowAutoTopicCreation: true,
+		AllowAutoTopicCreation: k.cfg.KafkaAutoTopicCreation,
 	}
 
 	common_utils.LogInfo("writer created")
