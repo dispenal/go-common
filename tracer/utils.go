@@ -73,18 +73,30 @@ func StartAndTracePubsub(ctx context.Context, spanName string, data *pubsub.Mess
 
 func InjectTextMapCarrier(spanCtx context.Context) (propagation.MapCarrier, error) {
 	m := make(propagation.MapCarrier)
-	otel.GetTextMapPropagator().Inject(spanCtx, m)
+	otel.GetTextMapPropagator().Extract(spanCtx, m)
 
 	return m, nil
 }
 
-func TextMapCarrierToKafkaMessageHeaders(textMap propagation.MapCarrier) []kafka.Header {
-	headers := make([]kafka.Header, 0, len(textMap))
+func InjectTextHeaderCarrier(spanCtx context.Context) (propagation.HeaderCarrier, error) {
+	m := make(propagation.HeaderCarrier)
+	otel.GetTextMapPropagator().Extract(spanCtx, m)
 
-	for k, v := range textMap {
+	return m, nil
+}
+
+func TextHeaderCarrierToKafkaMessageHeaders(hederMap propagation.HeaderCarrier) []kafka.Header {
+	headers := make([]kafka.Header, 0, len(hederMap))
+
+	for k, v := range hederMap {
+		val, err := json.Marshal(v)
+		if err != nil {
+			continue
+		}
+
 		headers = append(headers, kafka.Header{
 			Key:   k,
-			Value: []byte(v),
+			Value: val,
 		})
 	}
 
@@ -113,12 +125,12 @@ func ExtractTextMapCarrierBytes(spanCtx context.Context) []byte {
 }
 
 func GetKafkaTracingHeadersFromSpanCtx(spanCtx context.Context) []kafka.Header {
-	textMapCarrier, err := InjectTextMapCarrier(spanCtx)
+	textMapCarrier, err := InjectTextHeaderCarrier(spanCtx)
 	if err != nil {
 		return []kafka.Header{}
 	}
 
-	kafkaMessageHeaders := TextMapCarrierToKafkaMessageHeaders(textMapCarrier)
+	kafkaMessageHeaders := TextHeaderCarrierToKafkaMessageHeaders(textMapCarrier)
 	return kafkaMessageHeaders
 }
 
