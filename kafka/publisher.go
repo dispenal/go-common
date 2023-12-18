@@ -76,6 +76,12 @@ func (k *Client) Publish(ctx context.Context, topic string, msg any) error {
 }
 
 func (k *Client) PublishWithTracer(ctx context.Context, topic string, msg any) error {
+	spanCtx, span := tracer.StartAndTraceWithData(ctx, "producer.PublishMessage", map[string]any{
+		"topic": topic,
+		"body":  msg,
+	})
+	defer span.End()
+
 	if !k.IsWriters() {
 		return errors.New("writers not created")
 	}
@@ -87,7 +93,7 @@ func (k *Client) PublishWithTracer(ctx context.Context, topic string, msg any) e
 	if err != nil {
 		return errors.New("message of data sender can not marshal")
 	}
-	headers := tracer.GetKafkaTracingHeadersFromSpanCtx(ctx)
+	headers := tracer.GetKafkaTracingHeadersFromSpanCtx(spanCtx)
 
 	headers = append(headers, kafka.Header{
 		Key:   "origin",
