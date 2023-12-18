@@ -74,14 +74,14 @@ func StartAndTracePubsub(ctx context.Context, spanName string, data *pubsub.Mess
 
 func InjectTextMapCarrier(spanCtx context.Context) (propagation.MapCarrier, error) {
 	m := make(propagation.MapCarrier)
-	otel.GetTextMapPropagator().Extract(spanCtx, m)
+	otel.GetTextMapPropagator().Inject(spanCtx, m)
 
 	return m, nil
 }
 
 func InjectTextHeaderCarrier(spanCtx context.Context) (propagation.HeaderCarrier, error) {
 	m := make(propagation.HeaderCarrier)
-	otel.GetTextMapPropagator().Extract(spanCtx, m)
+	otel.GetTextMapPropagator().Inject(spanCtx, m)
 
 	return m, nil
 }
