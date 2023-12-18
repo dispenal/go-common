@@ -6,6 +6,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/dispenal/go-common/tracer"
 	common_utils "github.com/dispenal/go-common/utils"
 	"github.com/segmentio/kafka-go"
 	"github.com/segmentio/kafka-go/protocol"
@@ -58,6 +59,51 @@ func (k *Client) Publish(ctx context.Context, topic string, msg any) error {
 					Value: []byte(k.cfg.ServiceName),
 				},
 			},
+		})
+
+		if errors.Is(err, kafka.LeaderNotAvailable) || errors.Is(err, context.DeadlineExceeded) {
+			time.Sleep(time.Millisecond * 250)
+			continue
+		}
+
+		if err != nil {
+			return err
+		}
+		break
+
+	}
+	return nil
+}
+
+func (k *Client) PublishWithTracer(ctx context.Context, topic string, msg any) error {
+	if !k.IsWriters() {
+		return errors.New("writers not created")
+	}
+	if topic == "" {
+		return errors.New("topic not empty")
+	}
+
+	dataSender, err := json.Marshal(msg)
+	if err != nil {
+		return errors.New("message of data sender can not marshal")
+	}
+	headers := tracer.GetKafkaTracingHeadersFromSpanCtx(ctx)
+
+	headers = append(headers, kafka.Header{
+		Key:   "origin",
+		Value: []byte(k.cfg.ServiceName),
+	})
+
+	const retries = 3
+	for i := 0; i < retries; i++ {
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+
+		err = k.writer.WriteMessages(ctx, kafka.Message{
+			Topic:   topic,
+			Key:     []byte(hashMessage(dataSender)),
+			Value:   dataSender,
+			Headers: headers,
 		})
 
 		if errors.Is(err, kafka.LeaderNotAvailable) || errors.Is(err, context.DeadlineExceeded) {

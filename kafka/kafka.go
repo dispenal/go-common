@@ -21,6 +21,7 @@ type IClient interface {
 
 	NewPublisher() error
 	Publish(ctx context.Context, topic string, msg any) error
+	PublishWithTracer(ctx context.Context, topic string, msg any) error
 	publishToDLQ(ctx context.Context, m kafka.Message) error
 	IsReaderConnected() bool
 }

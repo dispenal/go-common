@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"cloud.google.com/go/pubsub"
+	"github.com/segmentio/kafka-go"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/baggage"
@@ -77,6 +78,19 @@ func InjectTextMapCarrier(spanCtx context.Context) (propagation.MapCarrier, erro
 	return m, nil
 }
 
+func TextMapCarrierToKafkaMessageHeaders(textMap propagation.MapCarrier) []kafka.Header {
+	headers := make([]kafka.Header, 0, len(textMap))
+
+	for k, v := range textMap {
+		headers = append(headers, kafka.Header{
+			Key:   k,
+			Value: []byte(v),
+		})
+	}
+
+	return headers
+}
+
 func ExtractTextMapCarrier(spanCtx context.Context) propagation.MapCarrier {
 	textMapCarrier, err := InjectTextMapCarrier(spanCtx)
 	if err != nil {
@@ -96,6 +110,16 @@ func ExtractTextMapCarrierBytes(spanCtx context.Context) []byte {
 		return []byte("")
 	}
 	return dataBytes
+}
+
+func GetKafkaTracingHeadersFromSpanCtx(spanCtx context.Context) []kafka.Header {
+	textMapCarrier, err := InjectTextMapCarrier(spanCtx)
+	if err != nil {
+		return []kafka.Header{}
+	}
+
+	kafkaMessageHeaders := TextMapCarrierToKafkaMessageHeaders(textMapCarrier)
+	return kafkaMessageHeaders
 }
 
 func TraceErr(ctx context.Context, err error) {
