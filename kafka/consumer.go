@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"time"
 
 	common_utils "github.com/dispenal/go-common/utils"
@@ -50,8 +49,10 @@ func (k *Client) Close() error {
 // Listen manual listen
 // need call msg.Commit() when process done
 // recommend for this process
-func (k *Client) Listen(ctx context.Context, handler KafkaHandler) error {
+func (k *Client) Listen(f HandlerFunc) error {
 	for _, r := range k.readers {
+		ctx := context.Background()
+
 		go func(r *kafka.Reader) {
 			for {
 				m, err := r.FetchMessage(ctx) // is not auto commit
@@ -62,7 +63,7 @@ func (k *Client) Listen(ctx context.Context, handler KafkaHandler) error {
 					break
 				}
 				if err != nil {
-					log.Print(err)
+					common_utils.LogIfError(err)
 					continue
 				}
 				retries := 1
@@ -101,7 +102,7 @@ func (k *Client) Listen(ctx context.Context, handler KafkaHandler) error {
 						break
 					}
 
-					if err := handler.Process(ctx, msg); err != nil {
+					if err := f(ctx, msg); err != nil {
 						common_utils.LogError(fmt.Sprintf("failed process message %s with error %v, will retry %d/%d", string(m.Key), err, retries, k.cfg.KafkaDlqRetry))
 						errorMsg = err.Error()
 						time.Sleep(k.Backoff.NextBackOff())

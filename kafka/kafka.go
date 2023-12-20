@@ -9,12 +9,10 @@ import (
 	"github.com/segmentio/kafka-go"
 )
 
-type KafkaHandler interface {
-	Process(context.Context, *Message) error
-}
+type HandlerFunc func(context.Context, *Message) error
 
 type IClient interface {
-	Listen(ctx context.Context, handler KafkaHandler) error
+	Listen(ctx context.Context, f HandlerFunc) error
 	NewConsumer()
 	IsWriters() bool
 	Close() error
