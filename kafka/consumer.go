@@ -10,6 +10,7 @@ import (
 	"github.com/dispenal/go-common/tracer"
 	common_utils "github.com/dispenal/go-common/utils"
 	"github.com/segmentio/kafka-go"
+	"go.opentelemetry.io/otel/codes"
 )
 
 func (k *Client) NewConsumer() {
@@ -93,14 +94,16 @@ func (k *Client) Listen(f HandlerFunc) error {
 
 				for {
 					if retries >= k.cfg.KafkaDlqRetry {
+						spanCtx, span := tracer.StartKafkaConsumerTracerSpan(ctx, headers, "kafkaConsumer.publishToDLQ")
+						span.RecordError(errors.New(errorMsg))
+						span.SetStatus(codes.Error, errorMsg)
+
 						common_utils.LogError(fmt.Sprintf("failed process message: %s, will move to DLQ", string(m.Key)))
 
 						m.Headers = append(m.Headers, kafka.Header{
 							Key:   "error",
 							Value: []byte(errorMsg),
 						})
-
-						spanCtx, span := tracer.StartKafkaConsumerTracerSpan(ctx, headers, "kafkaConsumer.publishToDLQ")
 
 						if err := k.publishToDLQ(spanCtx, m); err != nil {
 							tracer.TraceErr(spanCtx, err)
