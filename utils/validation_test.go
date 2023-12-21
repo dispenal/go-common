@@ -2,7 +2,6 @@ package common_utils
 
 import (
 	"bytes"
-	"encoding/json"
 	"io"
 	"testing"
 
@@ -55,7 +54,7 @@ func TestValidateBodyPayload(t *testing.T) {
 	input := testInput{
 		Success: true,
 	}
-	body, err := json.Marshal(input)
+	body, err := Marshal(input)
 	assert.NoError(t, err)
 	reader := bytes.NewReader(body)
 	var output testInput

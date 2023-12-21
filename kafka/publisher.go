@@ -2,7 +2,6 @@ package kafka
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"time"
 
@@ -41,7 +40,7 @@ func (k *Client) Publish(ctx context.Context, topic string, msg any) error {
 		return errors.New("topic not empty")
 	}
 
-	dataSender, err := json.Marshal(msg)
+	dataSender, err := common_utils.Marshal(msg)
 	if err != nil {
 		return errors.New("message of data sender can not marshal")
 	}
@@ -92,7 +91,7 @@ func (k *Client) PublishWithTracer(ctx context.Context, topic string, msg any) e
 		return errors.New("topic not empty")
 	}
 
-	dataSender, err := json.Marshal(msg)
+	dataSender, err := common_utils.Marshal(msg)
 	span.RecordError(err)
 	if err != nil {
 		span.SetStatus(codes.Error, err.Error())

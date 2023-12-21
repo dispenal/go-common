@@ -1,7 +1,6 @@
 package common_utils
 
 import (
-	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -21,7 +20,7 @@ func TestGenerateSuccessResp(t *testing.T) {
 	GenerateJsonResponse(recorder, data, successStatusCode, "Test Success")
 
 	var resp Response[string]
-	json.NewDecoder(recorder.Body).Decode(&resp)
+	NewDecoder(recorder.Body).Decode(&resp)
 
 	assert.Equal(t, "Test Success", resp.Message)
 	assert.Equal(t, http.StatusText(successStatusCode), resp.Status)
@@ -37,7 +36,7 @@ func TestGenerateErrorResp(t *testing.T) {
 	GenerateJsonResponse(recorder, data, errorStatusCode, "Test Failed")
 
 	var resp Response[string]
-	json.NewDecoder(recorder.Body).Decode(&resp)
+	NewDecoder(recorder.Body).Decode(&resp)
 
 	assert.Equal(t, "Test Failed", resp.Message)
 	assert.Equal(t, http.StatusText(errorStatusCode), resp.Status)

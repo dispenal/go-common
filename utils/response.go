@@ -1,7 +1,6 @@
 package common_utils
 
 import (
-	"encoding/json"
 	"net/http"
 )
 
@@ -40,7 +39,7 @@ func GenerateJsonResponse(w http.ResponseWriter, data interface{}, statusCode in
 		Data:       data,
 	}
 
-	responseEncode, err := json.Marshal(response)
+	responseEncode, err := Marshal(response)
 	PanicIfAppError(err, "failed when marshar response", 500)
 	w.Write(responseEncode)
 }

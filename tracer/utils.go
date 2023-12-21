@@ -2,7 +2,6 @@ package tracer
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"reflect"
@@ -113,7 +112,7 @@ func ExtractTextMapCarrierBytes(spanCtx context.Context) []byte {
 		return []byte("")
 	}
 
-	dataBytes, err := json.Marshal(&textMapCarrier)
+	dataBytes, err := common_utils.Marshal(&textMapCarrier)
 	if err != nil {
 		return []byte("")
 	}
@@ -240,7 +239,7 @@ func BuildAttribute(args ...any) []attribute.KeyValue {
 		}
 
 		if v.Kind() == reflect.Slice {
-			dataBytes, err := json.Marshal(arg)
+			dataBytes, err := common_utils.Marshal(arg)
 			if err != nil {
 				continue
 			}

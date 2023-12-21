@@ -2,7 +2,6 @@ package pubsub
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"time"
 
@@ -78,7 +77,7 @@ func (p *PubSubClientImpl) CreateSubscriptionIfNotExists(ctx context.Context, id
 func (p *PubSubClientImpl) PublishTopics(ctx context.Context, topics []*pubsub.Topic, data any, orderingKey string) error {
 	var results []*pubsub.PublishResult
 
-	message, err := json.Marshal(data)
+	message, err := common_utils.Marshal(data)
 	if err != nil {
 		return err
 	}

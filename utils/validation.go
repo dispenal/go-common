@@ -1,7 +1,6 @@
 package common_utils
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"strings"
@@ -50,7 +49,7 @@ func ValidateStruct(data interface{}) {
 }
 
 func ValidateBodyPayload(body io.ReadCloser, output interface{}) {
-	err := json.NewDecoder(body).Decode(output)
+	err := NewDecoder(body).Decode(output)
 	PanicIfAppError(err, "failed when decode body payload", 400)
 
 	ValidateStruct(output)

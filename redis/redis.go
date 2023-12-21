@@ -88,7 +88,7 @@ func (s *CacheSvcImpl) Set(ctx context.Context, key string, data any, duration .
 			}
 		}
 
-		cacheData, err := json.Marshal(data)
+		cacheData, err := common_utils.Marshal(data)
 		if err != nil {
 			return err
 		}
