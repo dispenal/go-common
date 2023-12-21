@@ -67,7 +67,7 @@ func (k *Client) Listen(f HandlerFunc) error {
 					continue
 				}
 				retries := 1
-				var errorMsg string
+				errorMsg := ""
 
 				msg := &Message{
 					Offset:    m.Offset,
@@ -99,6 +99,11 @@ func (k *Client) Listen(f HandlerFunc) error {
 						if err := k.publishToDLQ(ctx, m); err != nil {
 							common_utils.LogError(fmt.Sprintf("failed move message to DLQ: %s", string(m.Key)))
 						}
+
+						if err := r.CommitMessages(ctx, m); err != nil {
+							common_utils.LogError(fmt.Sprintf("failed commit message after publish DLQ: %s", string(m.Key)))
+						}
+
 						break
 					}
 
