@@ -7,6 +7,7 @@ import (
 	"io"
 	"time"
 
+	"github.com/dispenal/go-common/tracer"
 	common_utils "github.com/dispenal/go-common/utils"
 	"github.com/segmentio/kafka-go"
 )
@@ -69,10 +70,13 @@ func (k *Client) Listen(f HandlerFunc) error {
 				retries := 1
 				errorMsg := ""
 
+				headers := tracer.TextMapCarrierFromKafkaMessageHeaders(m.Headers)
+
 				msg := &Message{
 					Offset:    m.Offset,
 					Partition: m.Partition,
 					Topic:     m.Topic,
+					Headers:   headers,
 					Body:      m.Value,
 					Timestamp: m.Time.Unix(),
 					Key:       string(m.Key),
