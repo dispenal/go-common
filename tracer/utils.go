@@ -15,6 +15,7 @@ import (
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/baggage"
+	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/trace"
@@ -147,11 +148,12 @@ func GetKafkaTracingHeadersFromSpanCtx(spanCtx context.Context) []kafka.Header {
 }
 
 func TraceErr(ctx context.Context, err error) {
-	span := trace.SpanFromContext(ctx)
+	if err != nil {
+		span := trace.SpanFromContext(ctx)
 
-	span.RecordError(err)
-	span.SetAttributes(attribute.Bool("error", true))
-	span.SetAttributes(attribute.String("error_code", err.Error()))
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+	}
 }
 
 func TraceWithErr(ctx context.Context, err error) error {
@@ -159,7 +161,7 @@ func TraceWithErr(ctx context.Context, err error) error {
 		span := trace.SpanFromContext(ctx)
 
 		span.RecordError(err)
-		span.SetAttributes(attribute.Bool("error", true))
+		span.SetStatus(codes.Error, err.Error())
 	}
 
 	return err

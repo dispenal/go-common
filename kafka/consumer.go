@@ -100,13 +100,18 @@ func (k *Client) Listen(f HandlerFunc) error {
 							Value: []byte(errorMsg),
 						})
 
-						if err := k.publishToDLQ(ctx, m); err != nil {
+						spanCtx, span := tracer.StartKafkaConsumerTracerSpan(ctx, headers, "kafkaConsumer.publishToDLQ")
+
+						if err := k.publishToDLQ(spanCtx, m); err != nil {
+							tracer.TraceErr(spanCtx, err)
 							common_utils.LogError(fmt.Sprintf("failed move message to DLQ: %s", string(m.Key)))
 						}
 
-						if err := r.CommitMessages(ctx, m); err != nil {
+						if err := r.CommitMessages(spanCtx, m); err != nil {
+							tracer.TraceErr(spanCtx, err)
 							common_utils.LogError(fmt.Sprintf("failed commit message after publish DLQ: %s", string(m.Key)))
 						}
+						span.End()
 
 						break
 					}
