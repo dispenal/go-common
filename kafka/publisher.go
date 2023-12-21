@@ -32,7 +32,7 @@ func (k *Client) NewPublisher() error {
 	return nil
 }
 
-func (k *Client) Publish(ctx context.Context, topic string, msg any) error {
+func (k *Client) Publish(ctx context.Context, topic string, event Event) error {
 	if !k.IsWriters() {
 		return errors.New("writers not created")
 	}
@@ -40,7 +40,7 @@ func (k *Client) Publish(ctx context.Context, topic string, msg any) error {
 		return errors.New("topic not empty")
 	}
 
-	dataSender, err := common_utils.Marshal(msg)
+	eventPayload, err := common_utils.Marshal(event)
 	if err != nil {
 		return errors.New("message of data sender can not marshal")
 	}
@@ -51,8 +51,8 @@ func (k *Client) Publish(ctx context.Context, topic string, msg any) error {
 
 		err = k.writer.WriteMessages(ctx, kafka.Message{
 			Topic: topic,
-			Key:   []byte(hashMessage(dataSender)),
-			Value: dataSender,
+			Key:   []byte(hashMessage(eventPayload)),
+			Value: eventPayload,
 			Headers: []kafka.Header{
 				protocol.Header{
 					Key:   "origin",
@@ -75,11 +75,8 @@ func (k *Client) Publish(ctx context.Context, topic string, msg any) error {
 	return nil
 }
 
-func (k *Client) PublishWithTracer(ctx context.Context, topic string, msg any) error {
-	spanCtx, span := tracer.StartAndTraceWithData(ctx, "producer.PublishMessage", map[string]any{
-		"topic": topic,
-		"body":  msg,
-	})
+func (k *Client) PublishWithTracer(ctx context.Context, topic string, event Event) error {
+	spanCtx, span := tracer.StartAndTraceWithData(ctx, "producer.PublishMessage", event)
 	defer span.End()
 
 	if !k.IsWriters() {
@@ -91,7 +88,7 @@ func (k *Client) PublishWithTracer(ctx context.Context, topic string, msg any) e
 		return errors.New("topic not empty")
 	}
 
-	dataSender, err := common_utils.Marshal(msg)
+	eventPayload, err := common_utils.Marshal(event)
 	span.RecordError(err)
 	if err != nil {
 		span.SetStatus(codes.Error, err.Error())
@@ -111,8 +108,8 @@ func (k *Client) PublishWithTracer(ctx context.Context, topic string, msg any) e
 
 		err = k.writer.WriteMessages(ctx, kafka.Message{
 			Topic:   topic,
-			Key:     []byte(hashMessage(dataSender)),
-			Value:   dataSender,
+			Key:     []byte(hashMessage(eventPayload)),
+			Value:   eventPayload,
 			Headers: headers,
 		})
 		span.RecordError(err)

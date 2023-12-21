@@ -42,11 +42,9 @@ func TestKafkaPublisher(t *testing.T) {
 		t.Error(err)
 	}
 
-	err = kafkaClient.Publish(context.Background(), "tester", map[string]interface{}{
-		"meta":  "tester2",
-		"index": 1,
-		"topic": "topic-1",
-	})
+	event := NewEvent("test", []byte("test"))
+
+	err = kafkaClient.Publish(context.Background(), "tester", *event)
 	if err != nil {
 		t.Error(err)
 	}
