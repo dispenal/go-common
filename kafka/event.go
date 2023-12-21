@@ -25,8 +25,8 @@ type Event struct {
 
 // NewEvent creates a new event, with the given aggregateID, eventType and data.
 // The eventID is generated automatically, and the version is set to 0.
-func NewEvent(eventType EventType, data []byte, metadata... []byte) *Event {
-	if(len(metadata) == 0) {
+func NewEvent(eventType EventType, data []byte, metadata ...[]byte) *Event {
+	if len(metadata) == 0 {
 		metadata = append(metadata, []byte("{}"))
 	}
 	return &Event{
