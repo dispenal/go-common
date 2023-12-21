@@ -71,6 +71,23 @@ func StartAndTracePubsub(ctx context.Context, spanName string, data *pubsub.Mess
 	return spanCtx, span
 }
 
+func StartKafkaConsumerTracerSpan(ctx context.Context, headers []kafka.Header, spanName string) (context.Context, trace.Span) {
+	carrierFromKafkaHeaders := TextMapCarrierFromKafkaMessageHeaders(headers)
+
+	spanCtx := otel.GetTextMapPropagator().Extract(ctx, carrierFromKafkaHeaders)
+
+	return StartAndTrace(spanCtx, spanName)
+}
+
+func TextMapCarrierFromKafkaMessageHeaders(headers []kafka.Header) propagation.MapCarrier {
+	textMap := make(map[string]string, len(headers))
+	for _, header := range headers {
+		textMap[header.Key] = string(header.Value)
+	}
+
+	return textMap
+}
+
 func InjectTextMapCarrier(spanCtx context.Context) (propagation.MapCarrier, error) {
 	m := propagation.MapCarrier{}
 	otel.GetTextMapPropagator().Inject(spanCtx, m)
