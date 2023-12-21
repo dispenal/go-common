@@ -64,12 +64,12 @@ func (e *Event) GetTimestamp() time.Time {
 }
 
 // GetJsonData json unmarshal data attached to the Event.
-func (e *Event) GetJsonData(data any) error {
+func (e *Event) GetJsonData(data *any) error {
 	return common_utils.Unmarshal(e.GetData(), data)
 }
 
 // GetJsonMetadata unmarshal app-specific metadata serialized as json for the Event.
-func (e *Event) GetJsonMetadata(metaData any) error {
+func (e *Event) GetJsonMetadata(metaData *any) error {
 	return common_utils.Unmarshal(e.GetMetadata(), metaData)
 }
 
