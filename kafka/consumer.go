@@ -94,10 +94,10 @@ func (k *Client) Listen(f HandlerFunc) error {
 
 				for {
 					if retries > k.cfg.KafkaDlqRetry {
-						spanCtx, span := tracer.StartKafkaConsumerTracerSpan(ctx, headers, "kafkaConsumer.publishToDLQ")
+						spanCtx, span := tracer.StartAndTraceKafkaConsumer(ctx, headers, "kafkaConsumer.publishToDLQ")
 						span.RecordError(errors.New(errorMsg))
 						span.SetStatus(codes.Error, errorMsg)
-						span.SetAttributes(tracer.BuildAttribute(m)...)
+						span.SetAttributes(tracer.BuildAttribute(msg)...)
 
 						common_utils.LogError(fmt.Sprintf("failed process message: %s, will move to DLQ", string(m.Key)))
 

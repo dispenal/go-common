@@ -72,7 +72,7 @@ func StartAndTracePubsub(ctx context.Context, spanName string, data *pubsub.Mess
 	return spanCtx, span
 }
 
-func StartKafkaConsumerTracerSpan(ctx context.Context, headers propagation.MapCarrier, spanName string) (context.Context, trace.Span) {
+func StartAndTraceKafkaConsumer(ctx context.Context, headers propagation.MapCarrier, spanName string) (context.Context, trace.Span) {
 
 	spanCtx := otel.GetTextMapPropagator().Extract(ctx, headers)
 
