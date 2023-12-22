@@ -81,7 +81,7 @@ func (k *Client) Listen(f HandlerFunc) error {
 					Body:      m.Value,
 					Timestamp: m.Time.Unix(),
 					Key:       string(m.Key),
-					Retry:     0,
+					Retry:     retries,
 					Commit: func() error {
 						if err := r.CommitMessages(ctx, m); err != nil {
 							return err
@@ -121,13 +121,12 @@ func (k *Client) Listen(f HandlerFunc) error {
 						break
 					}
 
-					msg.Retry = retries + 1
-
 					if err := f(ctx, msg); err != nil {
 						common_utils.LogError(fmt.Sprintf("failed process message %s with error %v, will retry %d/%d", string(m.Key), err, retries, k.cfg.KafkaDlqRetry))
 						errorMsg = err.Error()
 						time.Sleep(k.Backoff.NextBackOff())
 						retries++
+						msg.Retry = retries
 						continue
 					}
 					break
