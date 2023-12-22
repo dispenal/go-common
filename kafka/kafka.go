@@ -33,6 +33,7 @@ type Message struct {
 	Body          []byte `json:"body,omitempty"`
 	Timestamp     int64  `json:"timestamp,omitempty"`
 	ConsumerGroup string `json:"consumer_group,omitempty"`
+	Retry         int    `json:"retry,omitempty"`
 	Commit        func() error
 	MoveToDLQ     func() error
 	Headers       map[string]string
