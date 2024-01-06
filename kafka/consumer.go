@@ -143,30 +143,33 @@ func (k *Client) Listen(f HandlerFunc) error {
 }
 
 func (k *Client) ListenTopic(topic string, f HandlerFunc) error {
-	for _, r := range k.readers {
-		ctx := context.Background()
+	ctx := context.Background()
 
-		go func(r *kafka.Reader) {
-			for {
-				m, err := r.FetchMessage(ctx) // is not auto commit
-				if err != nil && errors.Is(err, io.ErrUnexpectedEOF) {
-					break
-				}
-				if err != nil && errors.Is(err, io.EOF) {
-					break
-				}
-				if err != nil {
-					common_utils.LogIfError(err)
-					continue
-				}
-
-				if m.Topic != topic {
-					continue
-				}
-
-				k.handleMessage(ctx, r, m, f)
-			}
-		}(r)
+	r := k.readers[topic]
+	if r == nil {
+		common_utils.LogError(fmt.Sprintf("listen topic %s not found", topic))
+		return errors.New("listen topic not found")
 	}
+	go func(r *kafka.Reader) {
+		for {
+			m, err := r.FetchMessage(ctx) // is not auto commit
+			if err != nil && errors.Is(err, io.ErrUnexpectedEOF) {
+				break
+			}
+			if err != nil && errors.Is(err, io.EOF) {
+				break
+			}
+			if err != nil {
+				common_utils.LogIfError(err)
+				continue
+			}
+
+			if m.Topic != topic {
+				continue
+			}
+
+			k.handleMessage(ctx, r, m, f)
+		}
+	}(r)
 	return nil
 }
