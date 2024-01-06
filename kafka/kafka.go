@@ -12,16 +12,19 @@ import (
 type HandlerFunc func(context.Context, *Message) error
 
 type IClient interface {
-	Listen(ctx context.Context, f HandlerFunc) error
+	Listen(f HandlerFunc) error
+	ListenTopic(topic string, f HandlerFunc) error
 	NewConsumer()
 	IsWriters() bool
 	Close() error
 
 	NewPublisher() error
-	Publish(ctx context.Context, topic string, msg any) error
-	PublishWithTracer(ctx context.Context, topic string, msg any) error
+	Publish(ctx context.Context, topic string, msg Event) error
+	PublishWithTracer(ctx context.Context, topic string, msg Event) error
 	publishToDLQ(ctx context.Context, m kafka.Message) error
 	IsReaderConnected() bool
+
+	CreateTopic(topic string, numPart int) error
 }
 
 // Message define message encode/decode sarama message
@@ -47,7 +50,7 @@ type Client struct {
 	Backoff backoff.BackOff
 }
 
-func NewKafkaClient(cfg *common_utils.BaseConfig) *Client {
+func NewKafkaClient(cfg *common_utils.BaseConfig) IClient {
 	backoff := backoff.NewExponentialBackOff()
 	backoff.MaxElapsedTime = time.Minute * 5
 
