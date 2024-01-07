@@ -1,6 +1,7 @@
 package elastic
 
 import (
+	"fmt"
 	"os"
 
 	common_utils "github.com/dispenal/go-common/utils"
@@ -23,6 +24,14 @@ func NewElasticSearchClient(cfg *common_utils.BaseConfig) (*elasticsearch.Client
 	if err != nil {
 		return nil, err
 	}
+
+	info, err := client.Info()
+
+	if err != nil {
+		return nil, err
+	}
+
+	common_utils.LogInfo(fmt.Sprintf("Elasticsearch client: %s", info.String()))
 
 	return client, nil
 }
