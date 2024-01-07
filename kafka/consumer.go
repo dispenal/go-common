@@ -164,11 +164,9 @@ func (k *Client) ListenTopic(topic string, f HandlerFunc) error {
 				continue
 			}
 
-			if m.Topic != topic {
-				continue
+			if m.Topic == topic {
+				k.handleMessage(ctx, r, m, f)
 			}
-
-			k.handleMessage(ctx, r, m, f)
 		}
 	}(r)
 	return nil
