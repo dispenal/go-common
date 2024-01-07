@@ -8,7 +8,7 @@ import (
 	"github.com/elastic/go-elasticsearch/v8"
 )
 
-func NewElasticSearchClient(cfg common_utils.BaseConfig) (*elasticsearch.Client, error) {
+func NewElasticSearchClient(cfg *common_utils.BaseConfig) (*elasticsearch.Client, error) {
 	config := elasticsearch.Config{
 		Addresses: cfg.ElasticsearchHost,
 		Username:  cfg.ElasticsearchUser,
