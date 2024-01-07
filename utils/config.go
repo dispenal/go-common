@@ -32,9 +32,10 @@ type BaseConfig struct {
 	PostgresUser           string        `mapstructure:"POSTGRES_USER"`
 	PostgresPassword       string        `mapstructure:"POSTGRES_PASSWORD"`
 	PostgresDb             string        `mapstructure:"POSTGRES_DATABASE"`
-	ElasticsearchHost      string        `mapstructure:"ELASTICSEARCH_HOST"`
+	ElasticsearchHost      []string      `mapstructure:"ELASTICSEARCH_HOST"`
 	ElasticsearchUser      string        `mapstructure:"ELASTICSEARCH_USER"`
 	ElasticsearchPassword  string        `mapstructure:"ELASTICSEARCH_PASSWORD"`
+	ElasticsearchLogging   bool          `mapstructure:"ELASTICSEARCH_LOGGING,default=false"`
 	JaegerEnable           bool          `mapstructure:"JAEGER_ENABLE"`
 	JaegerHost             string        `mapstructure:"JAEGER_HOST"`
 	JaegerPort             string        `mapstructure:"JAEGER_PORT"`
