@@ -24,6 +24,20 @@ func Index(ctx context.Context, transport esapi.Transport, index, documentID str
 	return request.Do(ctx, transport)
 }
 
+func BulkIndex(ctx context.Context, transport esapi.Transport, index, documentID string, v []any) (*esapi.Response, error) {
+	reqBytes, err := common_utils.Marshal(v)
+	if err != nil {
+		return nil, errors.Wrap(err, "json.Marshal")
+	}
+
+	request := esapi.BulkRequest{
+		Index: index,
+		Body:  bytes.NewBuffer(reqBytes),
+	}
+
+	return request.Do(ctx, transport)
+}
+
 func Update(ctx context.Context, transport esapi.Transport, index, documentID string, document any) (*esapi.Response, error) {
 	doc := Doc{Doc: document}
 	reqBytes, err := common_utils.Marshal(&doc)
