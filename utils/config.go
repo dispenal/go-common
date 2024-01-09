@@ -27,6 +27,7 @@ type BaseConfig struct {
 	MongoUser              string        `mapstructure:"MONGO_USER"`
 	MongoPassword          string        `mapstructure:"MONGO_PASSWORD"`
 	MongoDb                string        `mapstructure:"MONGO_DATABASE"`
+	MongoReplicaSet        string        `mapstructure:"MONGO_REPLICA_SET,default=rs0"`
 	PostgresHost           string        `mapstructure:"POSTGRES_HOST"`
 	PostgresPort           string        `mapstructure:"POSTGRES_PORT"`
 	PostgresUser           string        `mapstructure:"POSTGRES_USER"`
