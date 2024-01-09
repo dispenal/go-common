@@ -2,78 +2,73 @@ package common_utils
 
 import (
 	"context"
-	"fmt"
-	"strings"
-	"time"
 
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func ExecSession(ctx context.Context, mongoClient *mongo.Client, fn func(session mongo.Session) error) error {
-	session, err := mongoClient.StartSession()
+func ExecSession(ctx context.Context, client *mongo.Client, fn func(mongo.SessionContext) error) error {
+	session, err := client.StartSession()
 	if err != nil {
 		return err
 	}
 	defer session.EndSession(ctx)
 
-	err = session.StartTransaction()
-	if err != nil {
+	// Start a transaction.
+	if err := session.StartTransaction(); err != nil {
 		return err
 	}
 
-	err = fn(session)
-	if err != nil {
-		if rbErr := session.AbortTransaction(ctx); rbErr != nil {
-			return fmt.Errorf("tx err: %v, rb err: %v", err, rbErr)
+	// Execute the callback with the session.
+	if err := mongo.WithSession(ctx, session, func(sc mongo.SessionContext) error {
+		if err := fn(sc); err != nil {
+			return err
 		}
+		return nil
+	}); err != nil {
 		return err
 	}
 
-	return session.CommitTransaction(ctx)
+	// Commit the transaction.
+	if err := session.CommitTransaction(ctx); err != nil {
+		return err
+	}
+
+	return nil
 }
 
-func ExecSessionWithRetry(ctx context.Context, mongoClient *mongo.Client, fn func(session mongo.Session) error) error {
-	var retryFunc = func() error {
-		session, err := mongoClient.StartSession()
-		if err != nil {
-			return err
-		}
-		defer session.EndSession(ctx)
+func ExecSessionWithRetry(ctx context.Context, client *mongo.Client, fn func(mongo.SessionContext) error) error {
+	session, err := client.StartSession()
+	if err != nil {
+		return err
+	}
+	defer session.EndSession(ctx)
 
-		err = session.StartTransaction()
-		if err != nil {
-			return err
-		}
-
-		err = fn(session)
-		if err != nil {
-			if rbErr := session.AbortTransaction(ctx); rbErr != nil {
-				return fmt.Errorf("tx err: %v, rb err: %v", err, rbErr)
-			}
-			return err
-		}
-
-		return session.CommitTransaction(ctx)
+	// Start a transaction.
+	if err := session.StartTransaction(); err != nil {
+		return err
 	}
 
-	err := retryFunc()
+	// retry 3 times
 	for i := 0; i < 3; i++ {
-		if err == nil {
-			break
-		} else if strings.Contains(err.Error(), "not primary") ||
-			strings.Contains(err.Error(), "no reachable servers") ||
-			strings.Contains(err.Error(), "connection() error") ||
-			strings.Contains(err.Error(), "connection reset by peer") ||
-			strings.Contains(err.Error(), "connection refused") ||
-			strings.Contains(err.Error(), "connection timed out") ||
-			strings.Contains(err.Error(), "connection closed") ||
-			strings.Contains(err.Error(), "connection reset") {
-			time.Sleep(100 * time.Millisecond)
-			err = retryFunc()
-		} else {
-			break
+		// Execute the callback with the session.
+		if err := mongo.WithSession(ctx, session, func(sc mongo.SessionContext) error {
+			if err := fn(sc); err != nil {
+				return err
+			}
+			return nil
+		}); err != nil {
+			if err := session.AbortTransaction(ctx); err != nil {
+				return err
+			}
+			continue
 		}
+		break
 	}
 
-	return err
+	// Commit the transaction.
+	if err := session.CommitTransaction(ctx); err != nil {
+		return err
+	}
+
+	return nil
 }
