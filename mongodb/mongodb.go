@@ -18,7 +18,7 @@ const (
 )
 
 func NewMongoDBConn(ctx context.Context, cfg *common_utils.BaseConfig) (*mongo.Client, error) {
-	mongoUri := fmt.Sprintf("mongodb://%s:%s@%s:%s?replicaSet=%s",
+	mongoUri := fmt.Sprintf("mongodb://%s:%s@%s:%s/?replicaSet=%s",
 		cfg.MongoUser,
 		cfg.MongoPassword,
 		cfg.MongoHost,
