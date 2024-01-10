@@ -29,6 +29,10 @@ type MultiMatchSearchQuery struct {
 	Sort  []any           `json:"sort"`
 }
 
+type Bool struct {
+	Must []any `json:"must"`
+}
+
 func SearchMultiMatchPrefix[T any](ctx context.Context, transport esapi.Transport, request SearchMatchPrefixRequest) (*SearchListResponse[T], error) {
 	searchQuery := make(map[string]any, 10)
 	matchPrefix := make(map[string]any, 10)
@@ -146,9 +150,4 @@ func SearchMatchPhrasePrefix[T any](ctx context.Context, transport esapi.Transpo
 		List:  responseList,
 		Total: hits.Hits.Total.Value,
 	}, nil
-}
-
-func Info(ctx context.Context, transport esapi.Transport) (*esapi.Response, error) {
-	infoRequest := &esapi.InfoRequest{Pretty: true}
-	return infoRequest.Do(ctx, transport)
 }
