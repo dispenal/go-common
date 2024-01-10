@@ -21,7 +21,8 @@ type EsHits[T any] struct {
 			Value int64 `json:"value"`
 		} `json:"total"`
 		Hits []struct {
-			Source T `json:"_source"`
+			Source T         `json:"_source"`
+			Sort   []float64 `json:"sort"`
 		} `json:"hits"`
 	} `json:"hits"`
 }
