@@ -3,6 +3,7 @@ package elastic
 import (
 	"context"
 
+	common_utils "github.com/dispenal/go-common/utils"
 	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/pkg/errors"
 )
@@ -10,6 +11,7 @@ import (
 func MappingIndex(ctx context.Context, esClient *elasticsearch.Client, indexName string, mapping []byte) error {
 	exists, err := isIndexExists(ctx, esClient, indexName)
 	if err != nil {
+		common_utils.LogError("error while checking index exists")
 		return errors.Wrap(err, "error while checking index exists")
 	}
 
@@ -19,6 +21,7 @@ func MappingIndex(ctx context.Context, esClient *elasticsearch.Client, indexName
 
 	response, err := CreateIndex(ctx, esClient, indexName, mapping)
 	if err != nil {
+		common_utils.LogError("error while creating index")
 		return errors.Wrap(err, "error while creating index")
 	}
 
@@ -34,11 +37,13 @@ func MappingIndex(ctx context.Context, esClient *elasticsearch.Client, indexName
 func isIndexExists(ctx context.Context, esClient *elasticsearch.Client, indexName string) (bool, error) {
 	response, err := Exists(ctx, esClient, []string{indexName})
 	if err != nil {
+		common_utils.LogError("error while checking index exists")
 		return false, errors.Wrap(err, "esclient.Exists")
 	}
 	defer response.Body.Close()
 
 	if response.IsError() && response.StatusCode == 404 {
+		common_utils.LogInfo("index not exists")
 		return false, nil
 	}
 
