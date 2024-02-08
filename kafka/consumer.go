@@ -165,7 +165,7 @@ func (k *Client) ListenTopic(topic string, f HandlerFunc) error {
 			}
 
 			if m.Topic == topic {
-				k.handleMessage(ctx, r, m, f)
+				go k.handleMessage(ctx, r, m, f)
 			}
 		}
 	}(r)
