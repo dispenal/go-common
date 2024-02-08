@@ -134,7 +134,7 @@ func (k *Client) Listen(f HandlerFunc) error {
 					common_utils.LogIfError(err)
 					continue
 				}
-				k.handleMessage(ctx, r, m, f)
+				go k.handleMessage(ctx, r, m, f)
 
 			}
 		}(r)
