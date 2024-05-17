@@ -56,7 +56,7 @@ func DownloadFile(url, filePath string) error {
 	return nil
 }
 
-func FetchFile(url, filePath string) (*os.File, error) {
+func FetchFile(url string) (*os.File, error) {
 	response, err := http.Get(url)
 	if err != nil {
 		return nil, err
