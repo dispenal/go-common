@@ -1,7 +1,9 @@
 package common_utils
 
 import (
+	"fmt"
 	"io"
+	"io/ioutil"
 	"mime"
 	"net/http"
 	"os"
@@ -52,4 +54,37 @@ func DownloadFile(url, filePath string) error {
 	}
 
 	return nil
+}
+
+func FetchFile(url, filePath string) (*os.File, error) {
+	response, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	defer response.Body.Close()
+
+	if response.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("failed to fetch file: %s", response.Status)
+	}
+
+	tmpFile, err := ioutil.TempFile("", "downloaded")
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = io.Copy(tmpFile, response.Body)
+	if err != nil {
+		tmpFile.Close()
+		os.Remove(tmpFile.Name())
+		return nil, err
+	}
+
+	_, err = tmpFile.Seek(0, 0)
+	if err != nil {
+		tmpFile.Close()
+		os.Remove(tmpFile.Name())
+		return nil, err
+	}
+
+	return tmpFile, nil
 }
